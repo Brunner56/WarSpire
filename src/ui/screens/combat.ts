@@ -6,6 +6,7 @@ import { enemySvg } from '../render/enemyArt';
 import { dollSvg, itemsToDoll } from '../render/doll';
 import { backdropSvg } from '../render/backdrop';
 import { DUNGEON_BY_ID } from '../../data/dungeons';
+import { wowIcon, localArt, PET_ICONS } from '../wowart';
 import { getCard, cardActions } from '../../data/cards';
 import { SEALS, TOTEMS, FORMS } from '../../data/mechanics';
 import { describeCard } from '../../engine/describe';
@@ -65,6 +66,20 @@ function enemyInfo(c: Combat, e: Enemy) {
   ));
 }
 
+function enemyArtEl(e: Enemy): HTMLElement {
+  const el = h('div', { class: 'eart', html: enemySvg(e.def.art) });
+  // Private art override: public/wow/enemies/<enemy id>.png
+  localArt(`enemies/${e.def.id}.png`, url => { el.innerHTML = ''; el.appendChild(h('img', { class: 'eimg', src: url, alt: e.name })); });
+  return el;
+}
+
+function backdropEl(dungeonId: string): HTMLElement {
+  const el = h('div', { class: 'backdrop', html: backdropSvg(dungeonId, ...DUNGEON_BY_ID[dungeonId].colors) });
+  // Private art override: public/wow/backdrops/<dungeon id>.jpg
+  localArt(`backdrops/${dungeonId}.jpg`, url => { el.innerHTML = ''; el.style.background = `center bottom / cover no-repeat url(${url})`; el.classList.add('photo'); });
+  return el;
+}
+
 function classMech(c: Combat): HTMLElement | null {
   const p = c.p;
   const parts: (HTMLElement | null)[] = [];
@@ -73,7 +88,7 @@ function classMech(c: Combat): HTMLElement | null {
   if (p.seal) parts.push(h('div', { class: 'mech', onclick: () => modal(h('div', null, h('h3', null, SEALS[p.seal!].name), h('p', null, SEALS[p.seal!].desc))) }, SEALS[p.seal].icon, h('small', null, 'Seal')));
   for (const [el, t] of Object.entries(p.totems)) if (t) parts.push(h('div', { class: `mech totem ${el}`, onclick: () => modal(h('div', null, h('h3', null, TOTEMS[t].name), h('p', null, TOTEMS[t].desc))) }, TOTEMS[t].icon));
   if (p.form !== 'caster') parts.push(h('div', { class: 'mech', onclick: () => modal(h('div', null, h('h3', null, FORMS[p.form].name), h('p', null, FORMS[p.form].desc))) }, FORMS[p.form].icon, h('small', null, FORMS[p.form].name.split(' ')[0])));
-  if (p.pet) parts.push(h('div', { class: 'mech pet' }, p.pet.icon, h('small', null, p.pet.name)));
+  if (p.pet) parts.push(h('div', { class: 'mech pet' }, wowIcon(PET_ICONS[p.pet.id], p.pet.icon, 'micon'), h('small', null, p.pet.name)));
   if (c.mem.chicken) parts.push(h('div', { class: 'mech' }, '🐔'));
   return parts.length ? h('div', { class: 'mechrow' }, parts) : null;
 }
@@ -111,7 +126,7 @@ export function renderCombat(app: App, run: RunState, ch: Character, c: Combat):
       },
     },
       intentEl(c, e),
-      h('div', { class: 'eart', html: enemySvg(e.def.art) }),
+      enemyArtEl(e),
       h('div', { class: 'ename' }, e.name),
       hpBar(e.hp, e.maxHp, e.block),
       statusRow(e),
@@ -174,7 +189,7 @@ export function renderCombat(app: App, run: RunState, ch: Character, c: Combat):
   return h('div', { class: 'screen combat-screen' },
     topBar(app, run, ch, true),
     h('div', { class: 'battlefield' },
-      h('div', { class: 'backdrop', html: backdropSvg(run.dungeonId, ...DUNGEON_BY_ID[run.dungeonId].colors) }),
+      backdropEl(run.dungeonId),
       player,
       enemies,
       h('div', { class: 'fx-layer' }),

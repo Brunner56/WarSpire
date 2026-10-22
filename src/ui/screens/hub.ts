@@ -15,6 +15,7 @@ import { HEROIC_RANKS, isUnlocked, maxRank, newRun, unlockLevel } from '../../en
 import { canEquip } from '../../engine/loot';
 import { cardEl, showCard, itemTile, itemTooltip } from '../components';
 import type { Slot } from '../../engine/types';
+import { wowIcon, TALENT_ICONS, CARD_ICONS } from '../wowart';
 
 const rankSel: Record<string, number> = {};
 
@@ -112,7 +113,7 @@ function talentsTab(app: App, ch: Character) {
                   can ? h('button', { class: 'btn primary', onclick: () => { ch.talents[tal.id] = r + 1; app.save(); close(); app.render(); } }, 'Learn') : h('span', { class: 'muted small' }, avail <= 0 ? 'No talent points available.' : r >= tal.max ? 'Maxed.' : `Requires ${TIER_REQ[tier]} points in ${t.name}.`),
                   r > 0 ? h('button', { class: 'btn small', onclick: () => { if (r === 1) delete ch.talents[tal.id]; else ch.talents[tal.id] = r - 1; if (!validTalents(ch)) { ch.talents[tal.id] = r; toast('Other talents depend on this one.', 'bad'); } app.save(); close(); app.render(); } }, 'Unlearn') : null,
                 )));
-            } }, h('span', { class: 'ti' }, tal.icon), h('span', { class: 'tr' }, `${r}/${tal.max}`), h('span', { class: 'tn' }, tal.name));
+            } }, h('span', { class: 'ti' }, wowIcon(TALENT_ICONS[tal.name] ?? (tal.card ? CARD_ICONS[tal.card] : undefined), tal.icon, 'timg')), h('span', { class: 'tr' }, `${r}/${tal.max}`), h('span', { class: 'tn' }, tal.name));
           }))),
       );
     }),

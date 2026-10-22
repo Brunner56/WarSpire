@@ -136,3 +136,12 @@ describe('combat basics', () => {
     expect(c.over).not.toBeNull();
   });
 });
+
+import { CARD_ICONS, TALENT_ICONS } from '../src/ui/wowart';
+describe('wow art mapping', () => {
+  it('every card and talent has a WoW icon name', () => {
+    expect(ALL_CARDS.filter(c => !CARD_ICONS[c.id]).map(c => c.id)).toEqual([]);
+    expect(Object.keys(CARD_ICONS).filter(id => !ALL_CARDS.some(c => c.id === id))).toEqual([]);
+    expect(TALENTS.filter(t => !t.card && !TALENT_ICONS[t.name]).map(t => t.name)).toEqual([]);
+  });
+});

@@ -7,6 +7,7 @@ import { statusDef } from '../engine/statuses';
 import { QUALITY_COLOR, SLOT_NAME, STAT_NAME, FX, SET_BY_ID } from '../data/items';
 import { CLASS_BY_ID } from '../data/classes';
 import type { Combat } from '../engine/combat';
+import { wowIcon, CARD_ICONS, STATUS_ICONS, itemIconName } from './wowart';
 
 const TYPE_NAME: Record<string, string> = { attack: 'Attack', skill: 'Ability', aura: 'Aura', curse: 'Affliction' };
 const RARITY_COLOR: Record<string, string> = { starter: '#9d9d9d', common: '#e8e8e8', uncommon: '#1eff00', rare: '#3a9aff', special: '#ff8000' };
@@ -28,7 +29,7 @@ export function cardEl(ci: CardInst | { id: string; up: boolean }, opts: { c?: C
   },
     def.cost >= 0 ? h('div', { class: `cost ${cost < base ? 'cheaper' : ''}` }, String(cost)) : null,
     h('div', { class: 'cname' }, def.name + (ci.up ? '+' : '')),
-    h('div', { class: 'cart', style: { '--school': school ? SCHOOL_COLOR[school] : '#888' } }, h('span', null, def.icon)),
+    h('div', { class: 'cart', style: { '--school': school ? SCHOOL_COLOR[school] : '#888' } }, wowIcon(CARD_ICONS[def.id], def.icon, 'cimg')),
     h('div', { class: 'ctype' }, `${TYPE_NAME[def.type]}${school && school !== 'physical' ? ' · ' + school[0].toUpperCase() + school.slice(1) : ''}`),
     h('div', { class: 'ctext', html: text }),
     d.kws.length ? h('div', { class: 'ckw' }, d.kws.join(' · ')) : null,
@@ -61,7 +62,7 @@ export function statusRow(u: Unit): HTMLElement {
     const def = statusDef(s);
     if (def.hidden) continue;
     row.appendChild(h('div', { class: `st ${def.debuff ? 'debuff' : 'buff'}`, title: `${def.name}: ${def.desc(n)}`, onclick: (e: Event) => { e.stopPropagation(); modal(h('div', null, h('h3', null, `${def.icon} ${def.name}`), h('p', null, def.desc(n)))); } },
-      h('span', null, def.icon), s === 'stun' || s === 'poly' || s === 'invuln' || s === 'airborne' || s === 'immune' || s === 'stealth' ? null : h('b', null, String(n))));
+      wowIcon(STATUS_ICONS[s], def.icon, 'sticon'), s === 'stun' || s === 'poly' || s === 'invuln' || s === 'airborne' || s === 'immune' || s === 'stealth' ? null : h('b', null, String(n))));
   }
   return row;
 }
@@ -84,7 +85,7 @@ export function statLines(stats: Partial<Record<StatKey, number>>): string[] {
 export function itemTile(it: Item | undefined, opts: { onClick?: () => void; slot?: string; compact?: boolean } = {}): HTMLElement {
   if (!it) return h('div', { class: 'itile empty', onclick: opts.onClick }, h('span', { class: 'iicon' }, SLOT_ICON[opts.slot ?? 'chest'] ?? '▫️'), h('span', { class: 'iname muted' }, opts.slot ? SLOT_NAME[opts.slot as keyof typeof SLOT_NAME] : 'Empty'));
   return h('div', { class: `itile q-${it.q}`, onclick: opts.onClick, style: { '--q': QUALITY_COLOR[it.q] } },
-    h('span', { class: 'iicon', style: { background: `linear-gradient(135deg, ${it.look.c1}, ${it.look.c2 ?? it.look.c1})` } }, itemIcon(it)),
+    h('span', { class: 'iicon', style: { background: `linear-gradient(135deg, ${it.look.c1}, ${it.look.c2 ?? it.look.c1})` } }, wowIcon(itemIconName(it), itemIcon(it), 'iimg')),
     h('span', { class: 'iname' }, it.name),
     opts.compact ? null : h('span', { class: 'istats' }, statLines(it.stats).slice(0, 3).join(' · ')),
   );

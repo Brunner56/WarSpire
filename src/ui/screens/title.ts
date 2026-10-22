@@ -7,6 +7,7 @@ import { RACE_BY_ID } from '../../data/races';
 import { DUNGEON_BY_ID } from '../../data/dungeons';
 import { wipeProfile, newProfile } from '../../engine/save';
 import type { Character } from '../../engine/character';
+import { setWowArt } from '../wowart';
 
 export function charDoll(ch: Character, w = 90, extraGear?: ReturnType<typeof itemsToDoll>) {
   const gear = extraGear ?? itemsToDoll(equippedItems(ch));
@@ -40,6 +41,7 @@ registerScreen('title', (app: App) => {
     ),
     h('div', { class: 'title-foot' },
       h('button', { class: 'btn ghost', onclick: () => howToPlay() }, '📜 How to Play'),
+      h('button', { class: 'btn ghost', onclick: () => { p.settings.wowArt = !p.settings.wowArt; setWowArt(p.settings.wowArt); app.save(); app.render(); } }, `🎨 WoW Art: ${p.settings.wowArt ? 'On' : 'Off'}`),
       h('button', { class: 'btn ghost', onclick: () => {
         const close = modal(h('div', null, h('h3', null, 'Erase all progress?'), h('p', null, 'This deletes every character and run. This cannot be undone.'),
           h('button', { class: 'btn danger', onclick: () => { wipeProfile(); app.profile = newProfile(); close(); app.go('title'); } }, 'Erase Everything')));

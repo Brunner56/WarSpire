@@ -6,6 +6,7 @@ import { PETS, HUNTER_PETS, CLASS_MECHANIC_TEXT } from '../../data/mechanics';
 import { STARTER_GEAR, makeItem } from '../../data/items';
 import { dollSvg, itemsToDoll } from '../render/doll';
 import { createCharacter } from '../../engine/save';
+import { wowIcon, RACE_ICONS, CLASS_ICONS, PET_ICONS } from '../wowart';
 import type { ClassId, RaceId } from '../../engine/types';
 
 const NAMES: Record<RaceId, string[]> = {
@@ -56,7 +57,7 @@ registerScreen('create', (app: App) => {
         d.race = r.id; d.skin = 0; d.hairColor = 0; d.name = NAMES[r.id][Math.floor(Math.random() * 8)];
         if (!r.classes.includes(d.cls)) { d.cls = r.classes[0]; d.spec = CLASS_BY_ID[d.cls].trees[0].id; }
         rerender();
-      } }, h('span', { class: 'pick-icon' }, r.icon), h('span', null, r.name)))),
+      } }, h('span', { class: 'pick-icon' }, wowIcon(RACE_ICONS[r.id], r.icon, 'pimg')), h('span', null, r.name)))),
       h('div', { class: 'passive' }, h('b', null, race.passiveName), h('div', null, race.passive)),
     ),
     h('div', { class: 'panel' },
@@ -66,7 +67,7 @@ registerScreen('create', (app: App) => {
         return h('button', { class: `pick ${c.id === d.cls ? 'on' : ''} ${ok ? '' : 'locked'}`, style: { '--cc': c.color }, onclick: () => {
           if (!ok) { toast(`${race.name}s cannot be ${c.name}s in the Old World.`, 'bad'); return; }
           d.cls = c.id; d.spec = c.trees[0].id; rerender();
-        } }, h('span', { class: 'pick-icon' }, c.icon), h('span', { style: { color: ok ? c.color : undefined } }, c.name));
+        } }, h('span', { class: 'pick-icon' }, wowIcon(CLASS_ICONS[c.id], c.icon, 'pimg')), h('span', { style: { color: ok ? c.color : undefined } }, c.name));
       })),
       h('div', { class: 'passive' }, h('div', null, cls.desc), h('div', { class: 'muted small' }, CLASS_MECHANIC_TEXT[cls.id]), h('div', { class: 'muted small' }, `Armor: ${cls.armor} · Base HP ${cls.hp}`)),
     ),
@@ -78,7 +79,7 @@ registerScreen('create', (app: App) => {
     ),
     d.cls === 'hunter' ? h('div', { class: 'panel' },
       h('h3', null, 'Animal Companion'),
-      h('div', { class: 'grid4' }, HUNTER_PETS.map(pid => h('button', { class: `pick ${pid === d.pet ? 'on' : ''}`, onclick: () => { d.pet = pid; rerender(); } }, h('span', { class: 'pick-icon' }, PETS[pid].icon), h('span', null, PETS[pid].name)))),
+      h('div', { class: 'grid4' }, HUNTER_PETS.map(pid => h('button', { class: `pick ${pid === d.pet ? 'on' : ''}`, onclick: () => { d.pet = pid; rerender(); } }, h('span', { class: 'pick-icon' }, wowIcon(PET_ICONS[pid], PETS[pid].icon, 'pimg')), h('span', null, PETS[pid].name)))),
       h('div', { class: 'passive' }, PETS[d.pet].desc),
     ) : null,
     h('div', { class: 'panel' },

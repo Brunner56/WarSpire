@@ -46,6 +46,15 @@ npx cap open ios       # opens Xcode — pick your team and run on a device/simu
 ```
 `capacitor.config.json` is already set up (app id `com.warspire.game`, portrait, dark background).
 
+## WoW art (personal use)
+
+- **Icons:** cards, items, talents, statuses, races, classes and pets show official WoW icons, loaded at runtime from Wowhead's public icon CDN (`wow.zamimg.com`). Nothing is bundled in the repo. If an icon can't load (offline, wrong name, or CDN blocked), the built-in emoji art is shown instead. Toggle with **🎨 WoW Art** on the title screen. Icon names live in `src/ui/wowart.ts`.
+- **Your own large art:** put images in `public/wow/` (git-ignored, so they never get committed) and they replace the drawn art automatically:
+  - `public/wow/enemies/<enemy id>.png` — enemy portraits, e.g. `rfc_taragaman.png`, `on_onyxia.png`, `mc_ragnaros.png`, `bwl_nefarian.png` (transparent PNGs look best). Enemy ids are in `src/data/dungeons/*.ts`.
+  - `public/wow/backdrops/<dungeon id>.jpg` — battle backgrounds: `rfc`, `dm`, `wc`, `sfk`, `sm`, `zf`, `brd`, `strat`, `ubrs`, `ony`, `mc`, `bwl`.
+  - Rebuild (`npm run build` / `npx cap sync ios`) after adding files so they're included in the app.
+- Your hero is still drawn as a paper doll, so that equipped gear stays visible on the character.
+
 ## Project layout
 
 - `src/engine/` — combat engine, run/map logic, character progression, loot, save system (UI-independent, fully unit tested).
