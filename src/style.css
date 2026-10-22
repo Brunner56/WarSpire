@@ -459,8 +459,3 @@ span.iimg.wwrap { width: 100%; height: 100%; }
 .hand-card { margin: 0 -11px; }
 .hand.n6 .hand-card, .hand.n7 .hand-card { margin: 0 -19px; }
 .hand.n8 .hand-card, .hand.n9 .hand-card, .hand.n10 .hand-card { margin: 0 -28px; }
-.pdoll svg { width: 178px !important; height: 216px !important; }
-.enemy .eart svg { max-height: 210px; }
-.enemy.boss .eart svg { max-height: 260px; }
-.enemies:has(.enemy:nth-child(3)) .enemy .eart svg { max-height: 150px; }
-@media (max-height: 700px) { .pdoll svg { width: 130px !important; height: 158px !important; } .enemy .eart svg { max-height: 140px; } }

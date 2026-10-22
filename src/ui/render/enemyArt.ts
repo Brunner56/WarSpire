@@ -66,30 +66,22 @@ export function enemySvg(a: EnemyArt): string {
       </g>`, size);
     }
     case 'elemental': {
-      // Firelord-style: molten muscular torso armoured in black rock, flame crown, lava-pool base
-      const core = c1, rockC = c3 ?? shade(c2, -0.35);
-      const hot = mix(core, '#fff3a0', 0.55);
-      const lava = P.vol(core), rock = P.vol(rockC);
-      const flame = (d: string, col: string) => sh(d, P.vol(col), 1.6, 'class="flicker"');
-      const crack = (d: string) => ln(d, hot, 2.2, `filter="${P.filterGlow(1.2)}"`);
-      return wrap(P, `<ellipse cx="80" cy="78" rx="70" ry="70" fill="${P.glowFill(core)}" opacity=".5"/>
-        ${sh('M30 150 Q36 126 54 120 Q66 132 80 124 Q94 132 106 120 Q124 126 130 150 Z', lava, 2)}${sh('M40 150 Q50 136 62 138 Q70 146 80 140 Q90 146 98 138 Q110 136 120 150 Z', P.vol(rockC), 1.6)}
-        ${crack('M48 146 Q56 140 64 144 M96 144 Q104 140 112 146')}
-        ${sh('M56 126 Q46 100 52 76 L108 76 Q114 100 104 126 Q92 134 80 130 Q68 134 56 126 Z', lava, 2.4)}
-        ${crack('M66 92 L72 104 L68 116 M94 90 L88 104 L94 118 M80 108 L80 126')}
-        ${sh('M50 62 Q80 46 110 62 L114 80 Q98 92 80 88 Q62 92 46 80 Z', rock, 2.4)}${crack('M62 70 L70 78 M98 70 L90 78 M80 64 V78')}
-        ${sh('M50 58 Q36 50 26 62 Q24 80 38 86 Q50 84 54 72 Z', rock, 2.3)}${sh('M110 58 Q124 50 134 62 Q136 80 122 86 Q110 84 106 72 Z', rock, 2.3)}
-        ${sh('M34 50 L24 34 L40 46 Z M44 46 L42 30 L50 44 Z M126 50 L136 34 L120 46 Z M116 46 L118 30 L110 44 Z', rock, 1.6)}
-        ${sh('M32 82 Q22 96 22 112 L42 112 Q46 98 44 84 Z', lava, 2.2)}${sh('M128 82 Q138 96 138 112 L118 112 Q114 98 116 84 Z', lava, 2.2)}
-        ${sh('M18 104 L46 100 L48 118 L16 122 Z', rock, 2)}${sh('M142 104 L114 100 L112 118 L144 122 Z', rock, 2)}
-        ${[[18, 120], [26, 122], [34, 121]].map(([x, y]) => sh(`M${x} ${y} l-3 10 l6 -8 Z`, P.vol(hot), 1.2)).join('')}${[[126, 121], [134, 122], [142, 120]].map(([x, y]) => sh(`M${x} ${y} l3 10 l-6 -8 Z`, P.vol(hot), 1.2)).join('')}
-        ${flame('M80 -2 Q90 14 100 8 Q98 24 110 28 Q100 34 104 46 Q92 42 80 50 Q68 42 56 46 Q60 34 50 28 Q62 24 60 8 Q70 14 80 -2 Z', core)}
-        ${flame('M80 14 Q86 24 92 22 Q90 32 96 36 Q88 40 80 44 Q72 40 64 36 Q70 32 68 22 Q74 24 80 14 Z', hot)}
-        ${sh('M66 38 Q80 30 94 38 L96 56 Q88 66 80 66 Q72 66 64 56 Z', rock, 2.2)}
-        ${eye(P, 73, 48, 3, '#fff6c0')}${eye(P, 87, 48, 3, '#fff6c0')}${ln('M68 44 L77 47 M92 44 L83 47', INK, 2)}
-        ${sh('M72 57 Q80 62 88 57 L86 61 Q80 64 74 61 Z', hot, 1)}
-        ${a.wpn ? `<g transform="translate(140 104) rotate(-12) scale(1.25)">${sh('M-3 -84 L3 -84 L3 12 L-3 12Z', P.cyl('#2a1a10'), 1.8)}${sh('M-20 -104 L20 -104 L22 -80 L-22 -80Z', P.metal(shade(rockC, 0.2)), 2.2)}${ln('M-16 -96 h32 M-16 -88 h32', hot, 2, `filter="${P.filterGlow(1.5)}"`)}</g>` : ''}
-        ${[[24, 30], [134, 24], [40, 8], [120, 42], [146, 70]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.2" fill="${hot}" class="flicker" filter="${P.filterGlow(1)}"/>`).join('')}`, size, '0 -8 160 160');
+      const flame = (d: string, col: string) => sh(d, P.vol(col), 1.4, 'class="flicker"');
+      const rock = P.vol(c3 ?? shade(c2, -0.1));
+      return wrap(P, `${shadow()}
+        <ellipse cx="80" cy="70" rx="64" ry="66" fill="${P.glowFill(c1)}" opacity=".55"/>
+        ${flame('M80 2 Q94 22 106 18 Q102 36 118 44 Q106 50 112 66 Q94 60 80 70 Q66 60 48 66 Q54 50 42 44 Q58 36 54 18 Q66 22 80 2Z', c1)}
+        ${flame('M80 20 Q88 32 96 30 Q92 42 102 48 Q90 52 80 58 Q70 52 58 48 Q68 42 64 30 Q72 32 80 20Z', c2 === c1 ? shade(c1, 0.2) : mix(c1, '#ffffff', 0.45))}
+        ${sh('M52 56 Q80 44 108 56 L112 96 Q96 116 80 118 Q64 116 48 96Z', rock, 2)}
+        ${ln('M60 64 L68 76 L62 88 M98 62 L92 78 L100 90 M78 96 L84 108', c1, 2.4, `filter="${P.filterGlow(1.4)}"`)}
+        ${sh(limb(52, 64, 28, 92, 13, 10), rock)}${sh(limb(28, 92, 26, 112, 10, 12), rock)}
+        ${sh(limb(108, 64, 132, 90, 13, 10), rock)}${sh(limb(132, 90, 134, 110, 10, 12), rock)}
+        ${flame('M18 104 Q26 92 34 104 Q32 116 26 120 Q18 116 18 104Z', c1)}${flame('M126 102 Q134 90 142 102 Q140 114 134 118 Q126 114 126 102Z', c1)}
+        ${sh('M60 112 L56 138 L76 138 L78 116Z', rock, 1.6)}${sh('M84 116 L86 138 L106 138 L100 112Z', rock, 1.6)}
+        ${eye(P, 72, 70, 4, glowEye)}${eye(P, 92, 70, 4, glowEye)}
+        ${ln('M70 86 Q80 92 92 86', c1, 2.4, `filter="${P.filterGlow(1)}"`)}
+        ${a.wpn ? `<g transform="translate(136 108) rotate(-14) scale(1.2)">${sh('M-3 -84 L3 -84 L3 12 L-3 12Z', P.cyl('#2a1a10'))}${sh('M-20 -104 L20 -104 L22 -80 L-22 -80Z', P.metal(shade(c1, -0.1)), 2)}${ln('M-16 -96 h32', '#ffd27a', 2, `filter="${P.filterGlow(1.5)}"`)}</g>` : ''}
+        ${[[30, 30], [128, 26], [40, 12], [118, 50]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2" fill="#ffd27a" class="flicker" filter="${P.filterGlow(1)}"/>`).join('')}`, size);
     }
     case 'ooze':
       return wrap(P, `${shadow(50)}${sh('M28 140 Q20 100 46 84 Q52 50 82 48 Q114 50 116 84 Q140 100 132 140Z', P.orb(c1, mix(c1, '#ffffff', 0.6)), 2, 'opacity=".95"')}
@@ -205,7 +197,7 @@ export function enemySvg(a: EnemyArt): string {
         ${ln('M58 52 Q30 28 12 36 M102 52 Q130 28 148 36', shade(c2, -0.3), 1.4)}
         ${sh(limb(70, 100, 62, 128, 12, 9), P.fur(shade(c1, -0.25)))}${sh(limb(94, 100, 102, 128, 12, 9), P.fur(shade(c1, -0.25)))}
         ${sh('M52 136 L62 124 L72 136Z M92 136 L102 124 L112 136Z', P.vol('#2a1a10'), 1.4)}
-        ${sh('M44 46 Q80 32 116 46 Q122 66 112 86 Q104 106 80 108 Q56 106 48 86 Q38 66 44 46Z', skin, 2.4)}${ln('M58 60 Q70 70 80 64 Q90 70 102 60', INK, 1.2, 'opacity=".7"')}${ln('M80 70 V100 M68 82 Q80 86 92 82 M70 94 Q80 97 90 94', INK, 1, 'opacity=".6"')}
+        ${sh('M52 48 Q80 38 108 48 L112 80 Q104 104 80 106 Q56 104 48 80Z', skin, 2.2)}
         ${ln('M66 58 Q80 64 94 58 M68 72 Q80 78 92 72 M80 64 V96', shade(c1, -0.3), 1.6)}
         ${sh(limb(52, 54, 32, 82, 11, 9), skin)}${sh(limb(32, 82, 26, 100, 9, 8), skin)}${sh(limb(108, 54, 128, 82, 11, 9), skin)}${sh(limb(128, 82, 134, 100, 9, 8), skin)}
         ${[[24, 104], [134, 104]].map(([x, y]) => sh(`M${x - 6} ${y - 4} l-4 10 M${x} ${y} l-2 11 M${x + 6} ${y - 4} l2 10`, 'none', 2.4)).join('')}
