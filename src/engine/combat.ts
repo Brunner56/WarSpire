@@ -44,7 +44,11 @@ const RES_NAME: Record<ClassId, Player['resName']> = {
   warrior: 'Rage', rogue: 'Energy', paladin: 'Mana', hunter: 'Mana', priest: 'Mana', shaman: 'Mana', mage: 'Mana', warlock: 'Mana', druid: 'Mana',
 };
 
-export const RAGE_CAP = 10;
+/** Max Rage held at once, and how much unspent Rage survives the end of your turn. */
+export const RAGE_CAP = 6;
+export const RAGE_KEEP = 2;
+/** Rage gained from enemy hits is limited per enemy phase. */
+export const RAGE_FROM_HITS = 2;
 export const MAX_HAND = 10;
 
 export class Combat {
@@ -142,7 +146,6 @@ export class Combat {
   // ---------- flow ----------
   start() {
     if (this.p.cls === 'rogue') this.p.st.stealth = 1;
-    if (this.p.cls === 'warrior') this.p.res = 1;
     this.each(p => p.h.onCombatStart?.(this, p.n));
     for (const e of this.alive()) this.chooseMove(e);
     this.startPlayerTurn();
@@ -164,7 +167,7 @@ export class Combat {
     if (p.st.adrenaline) gain += 1;
     if (p.st.dazed) { gain -= p.st.dazed; delete p.st.dazed; }
     gain = Math.max(0, gain);
-    if (p.resName === 'Rage') p.res = Math.min(RAGE_CAP + (this.mem.rageCap ?? 0), p.res + gain);
+    if (p.resName === 'Rage') p.res = Math.min(this.rageCap(), p.res + gain);
     else p.res = gain;
     // draw
     let n = 5;
@@ -192,6 +195,9 @@ export class Combat {
     if (this.over) return;
     const p = this.p;
     this.each(x => x.h.onTurnEnd?.(this, x.n));
+    // Rage fades: only a little unspent Rage carries into the next turn
+    if (p.resName === 'Rage') p.res = Math.min(p.res, RAGE_KEEP + (this.mem.rageKeep ?? 0));
+    this.mem.hitRage = 0;
     this.petAttack();
     if (this.mem.chicken) { const t = this.randomEnemy(); if (t) this.effectDamage(t, this.mem.chicken, 'physical', 'effect'); }
     if (p.st.fortify) this.gainBlock(p.st.fortify, undefined, true);
@@ -415,7 +421,10 @@ export class Combat {
       return;
     }
     const dealt = this.takeDamage(p, dmg, d);
-    if (dealt > 0 && p.resName === 'Rage') p.res = Math.min(RAGE_CAP + (this.mem.rageCap ?? 0), p.res + 1);
+    if (dealt > 0 && p.resName === 'Rage' && (this.mem.hitRage ?? 0) < RAGE_FROM_HITS) {
+      this.mem.hitRage = (this.mem.hitRage ?? 0) + 1;
+      p.res = Math.min(this.rageCap(), p.res + 1);
+    }
     this.each(x => x.h.onHurt?.(this, x.n, dealt, d));
     this.retaliate(e);
     this.checkPlayerDeath();
@@ -656,8 +665,9 @@ export class Combat {
     else this.discard.push(ci);
   }
 
+  rageCap() { return RAGE_CAP + (this.mem.rageCap ?? 0); }
   gainRes(n: number) {
-    const cap = this.p.resName === 'Rage' ? RAGE_CAP + (this.mem.rageCap ?? 0) : 99;
+    const cap = this.p.resName === 'Rage' ? this.rageCap() : 99;
     this.p.res = Math.max(0, Math.min(cap, this.p.res + n));
   }
   gainCp(n: number) { this.p.cp = Math.max(0, Math.min(5, this.p.cp + n)); }

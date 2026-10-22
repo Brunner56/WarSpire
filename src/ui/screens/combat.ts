@@ -148,7 +148,7 @@ export function renderCombat(app: App, run: RunState, ch: Character, c: Combat):
     ),
   );
 
-  const resOrb = h('div', { class: `res-orb r-${p.resName.toLowerCase()}` }, h('b', null, String(p.res)), h('small', null, p.resName === 'Rage' ? `/${10}` : `/${p.resMax}`));
+  const resOrb = h('div', { class: `res-orb r-${p.resName.toLowerCase()}` }, h('b', null, String(p.res)), h('small', null, p.resName === 'Rage' ? `/${c.rageCap()}` : `/${p.resMax}`));
 
   const hand = h('div', { class: `hand n${c.hand.length}` }, c.hand.map((ci, i) => {
     const ok = c.canPlay(ci).ok;
