@@ -1,0 +1,10 @@
+{
+  "appId": "com.warspire.game",
+  "appName": "WarSpire",
+  "webDir": "dist",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#120c08",
+    "scrollEnabled": false
+  }
+}
