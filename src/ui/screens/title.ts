@@ -1,6 +1,7 @@
 import { h, modal } from '../dom';
 import { App, registerScreen } from '../app';
 import { dollSvg, itemsToDoll } from '../render/doll';
+import { svgImg } from '../render/toImg';
 import { equippedItems } from '../../engine/character';
 import { CLASS_BY_ID } from '../../data/classes';
 import { RACE_BY_ID } from '../../data/races';
@@ -11,7 +12,7 @@ import { setWowArt } from '../wowart';
 
 export function charDoll(ch: Character, w = 90, extraGear?: ReturnType<typeof itemsToDoll>) {
   const gear = extraGear ?? itemsToDoll(equippedItems(ch));
-  return h('div', { class: 'svgwrap', html: dollSvg({ race: ch.race, skin: ch.look.skin, hair: ch.look.hair, hairColor: ch.look.hairColor, face: ch.look.face, gear, team: CLASS_BY_ID[ch.cls].color }, { w, h: Math.round(w * 1.3) }) });
+  return h('div', { class: 'svgwrap' }, svgImg(dollSvg({ race: ch.race, skin: ch.look.skin, hair: ch.look.hair, hairColor: ch.look.hairColor, face: ch.look.face, gear, team: CLASS_BY_ID[ch.cls].color }, { w, h: Math.round(w * 1.3) })));
 }
 
 registerScreen('title', (app: App) => {
