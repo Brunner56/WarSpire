@@ -11,7 +11,7 @@ import { setWowArt } from '../wowart';
 
 export function charDoll(ch: Character, w = 90, extraGear?: ReturnType<typeof itemsToDoll>) {
   const gear = extraGear ?? itemsToDoll(equippedItems(ch));
-  return h('div', { class: 'svgwrap', html: dollSvg({ race: ch.race, skin: ch.look.skin, hair: ch.look.hair, hairColor: ch.look.hairColor, face: ch.look.face, gear }, { w, h: Math.round(w * 1.2) }) });
+  return h('div', { class: 'svgwrap', html: dollSvg({ race: ch.race, skin: ch.look.skin, hair: ch.look.hair, hairColor: ch.look.hairColor, face: ch.look.face, gear, team: CLASS_BY_ID[ch.cls].color }, { w, h: Math.round(w * 1.3) }) });
 }
 
 registerScreen('title', (app: App) => {

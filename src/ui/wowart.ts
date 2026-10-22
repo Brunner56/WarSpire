@@ -184,15 +184,20 @@ export function wowIcon(name: string | undefined, fallback: string, cls = 'wicon
   span.className = cls + ' fallback';
   span.textContent = fallback;
   if (!enabled || !name) return span;
+  // Emoji underneath, icon on top: something is always visible while the icon loads.
+  const wrapEl = document.createElement('span');
+  wrapEl.className = cls + ' wwrap';
   const img = document.createElement('img');
-  img.className = cls;
-  img.alt = fallback;
-  img.loading = 'lazy';
+  img.className = cls + ' wimg';
+  img.alt = '';
   img.decoding = 'async';
   img.referrerPolicy = 'no-referrer';
+  img.style.opacity = '0';
+  img.onload = () => { img.style.opacity = '1'; };
+  img.onerror = () => img.remove();
   img.src = CDN + name + '.jpg';
-  img.onerror = () => img.replaceWith(span);
-  return img;
+  wrapEl.append(span, img);
+  return wrapEl;
 }
 
 // ---------- Private local art (public/wow/, git-ignored) ----------

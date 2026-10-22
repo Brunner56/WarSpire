@@ -32,7 +32,7 @@ registerScreen('create', (app: App) => {
 
   const preview = () => {
     const gear = itemsToDoll(STARTER_GEAR[d.cls].map((t, i) => makeItem(t, i)));
-    return h('div', { class: 'svgwrap', html: dollSvg({ race: d.race, skin: d.skin, hair: d.hair, hairColor: d.hairColor, face: d.face, gear }, { w: 150, h: 190, pet: d.cls === 'hunter' ? PETS[d.pet].icon : undefined }) });
+    return h('div', { class: 'svgwrap', html: dollSvg({ race: d.race, skin: d.skin, hair: d.hair, hairColor: d.hairColor, face: d.face, gear, team: cls.color }, { w: 150, h: 200, pet: d.cls === 'hunter' ? PETS[d.pet].icon : undefined }) });
   };
 
   const stepper = (label: string, key: 'skin' | 'hair' | 'hairColor' | 'face', max: number) =>
