@@ -7,8 +7,8 @@ const Dr = (d: D): CardDef => ({ ...d, cls: 'druid' });
 export const DRUID_CARDS: CardDef[] = [
   Dr({ id: 'd_wrath', name: 'Wrath', type: 'attack', rarity: 'starter', cost: 1, school: 'nature', kw: ['caster'], a: [dmg(6)], icon: '🌿' }),
   Dr({ id: 'd_barkskin', name: 'Barkskin', type: 'skill', rarity: 'starter', cost: 1, a: [blk(5)], icon: '🌳' }),
-  Dr({ id: 'd_bear', name: 'Bear Form', type: 'skill', rarity: 'starter', cost: 1, a: [form('bear'), blk(6)], u: [form('bear'), blk(9)], kw: ['innate'], text: 'Shift into Bear Form (your Attacks also grant 2 Block). Gain 6 Block.', icon: '🐻' }),
-  Dr({ id: 'd_cat', name: 'Cat Form', type: 'skill', rarity: 'starter', cost: 1, a: [form('cat'), cp(1), draw(1)], u: [form('cat'), cp(2), draw(1)], kw: ['innate'], text: 'Shift into Cat Form (Attacks deal +1 damage). Gain 1 Combo Point. Draw 1.', icon: '🐆' }),
+  Dr({ id: 'd_bear', name: 'Bear Form', type: 'skill', rarity: 'starter', cost: 0, a: [form('bear'), blk(4)], u: [form('bear'), blk(7)], kw: ['innate'], text: 'Shift into Bear Form (your Attacks also grant 2 Block). Gain 4 Block.', icon: '🐻' }),
+  Dr({ id: 'd_cat', name: 'Cat Form', type: 'skill', rarity: 'starter', cost: 0, a: [form('cat'), cp(1)], u: [form('cat'), cp(2), draw(1)], kw: ['innate'], text: 'Shift into Cat Form (Attacks deal +1 damage and +10% crit). Gain 1 Combo Point.', icon: '🐆' }),
   // Balance
   Dr({ id: 'd_moonfire', name: 'Moonfire', tree: 'balance', type: 'attack', rarity: 'common', cost: 1, school: 'arcane', kw: ['caster'], a: [dmg(4), app('burn', 5)], u: [dmg(6), app('burn', 7)], icon: '🌙' }),
   Dr({ id: 'd_starfire', name: 'Starfire', tree: 'balance', type: 'attack', rarity: 'common', cost: 2, school: 'arcane', kw: ['caster'], a: [dmg(14)], u: [dmg(19)], icon: '⭐' }),

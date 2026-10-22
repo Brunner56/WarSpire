@@ -23,4 +23,4 @@ export function getEnemyDef(id: string): EnemyDef {
 export const allEnemyIds = () => [...ENEMIES.keys()];
 
 /** HP and damage multipliers by dungeon tier. */
-export const tierScale = (tier: number) => ({ hp: 1 + 0.17 * (tier - 1), dmg: 1 + 0.085 * (tier - 1) });
+export const tierScale = (tier: number) => ({ hp: 1 + 0.15 * (tier - 1), dmg: 1 + 0.075 * (tier - 1) });

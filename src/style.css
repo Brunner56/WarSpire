@@ -211,7 +211,8 @@ h3.sect { border-bottom: 1px solid var(--border); padding-bottom: 4px; margin-to
 .kwlist { font-size: 0.82rem; color: var(--muted); }
 .card-choice { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 10px 0; }
 .cc-wrap { display: flex; flex-direction: column; align-items: center; }
-.card-choice .card { --w: 118px; }
+.card-choice .card { --w: 102px; }
+.card-choice { gap: 5px; }
 .arrow { font-size: 1.5rem; color: var(--gold2); }
 
 /* ---------- modal & toast ---------- */

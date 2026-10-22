@@ -242,7 +242,7 @@ export function dollSvg(spec: DollSpec, opts: { w?: number; h?: number; pet?: st
   if (opts.pet) parts.push(`<text x="${cx + 42}" y="${fy - 2}" font-size="22" text-anchor="middle">${opts.pet}</text>`);
   const sc = `translate(${cx},${fy}) scale(${race.body.w * (gnome ? 1 : 1)},${race.body.h * (gnome ? 1 : 1)}) translate(${-cx},${-fy})`;
   const flip = spec.flip ? `translate(120,0) scale(-1,1)` : '';
-  return `<svg viewBox="-20 -10 160 194" width="${opts.w ?? 120}" height="${opts.h ?? 180}" xmlns="http://www.w3.org/2000/svg"><g transform="${flip}"><g transform="${sc}">${parts.join('')}</g></g></svg>`;
+  return `<svg viewBox="-20 -30 160 214" width="${opts.w ?? 120}" height="${opts.h ?? 180}" xmlns="http://www.w3.org/2000/svg"><g transform="${flip}"><g transform="${sc}">${parts.join('')}</g></g></svg>`;
 }
 
 export function itemsToDoll(items: Item[]): DollGear[] {

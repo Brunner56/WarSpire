@@ -58,7 +58,7 @@ export function autoTalents(ch: Character) {
   }
 }
 
-export interface SimResult { win: boolean; floors: number; act: number; hp: number; error?: string; deck: number; kills: RunState['kills'] }
+export interface SimResult { diedTo?: string; win: boolean; floors: number; act: number; hp: number; error?: string; deck: number; kills: RunState['kills'] }
 
 export function simRun(ch: Character, dungeonId: string, seed: number, rank = 0): { result: SimResult; run: RunState } {
   const rng = new Rng(seed);
@@ -78,6 +78,7 @@ export function simRun(ch: Character, dungeonId: string, seed: number, rank = 0)
       case 'combat': {
         const c = makeCombat(run, ch);
         botCombat(c, rng);
+        if (c.over !== 'win') (run as any).diedTo = p.enemies.join('+');
         resolveCombat(run, ch, c);
         break;
       }
@@ -112,7 +113,7 @@ export function simRun(ch: Character, dungeonId: string, seed: number, rank = 0)
       }
       case 'actEnd': nextAct(run, ch); break;
       case 'end':
-        return { result: { win: p.win, floors, act: run.act, hp: run.hp, deck: run.deck.length, kills: run.kills }, run };
+        return { result: { diedTo: (run as any).diedTo, win: p.win, floors, act: run.act, hp: run.hp, deck: run.deck.length, kills: run.kills }, run };
     }
   }
   return { result: { win: false, floors, act: run.act, hp: run.hp, error: 'guard', deck: run.deck.length, kills: run.kills }, run };
