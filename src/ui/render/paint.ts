@@ -18,11 +18,7 @@ export const mix = (a: string, b: string, t: number) => {
   return '#' + ((1 << 24) + (c[0] << 16) + (c[1] << 8) + c[2]).toString(16).slice(1);
 };
 
-export const INK = '#1c0f0a';
-const WARM = '#fff0c4', COOL = '#2c1840';
-/** Painterly light/shadow: highlights lean warm, shadows lean cool purple (never plain grey). */
-export const lit = (c: string, a: number) => mix(shade(c, a), WARM, 0.18);
-export const dim = (c: string, a: number) => mix(shade(c, -a), COOL, 0.28);
+export const INK = '#120a04';
 
 let seq = 0;
 
@@ -43,17 +39,17 @@ export class Paint {
     return ref;
   }
 
-  /** Painted volume: warm lit side, mid tone, cool shadow side, with soft brushy transitions. */
+  /** Cel-shaded volume: hard-edged light / base / shadow bands, light from top-left. */
   vol(c: string, strength = 1): string {
-    return this.key(`vol${c}${strength}`, id => `<linearGradient id="${id}" x1=".1" y1="0" x2=".9" y2="1"><stop offset="0" stop-color="${lit(c, 0.14 * strength)}"/><stop offset=".3" stop-color="${lit(c, 0.08 * strength)}"/><stop offset=".38" stop-color="${c}"/><stop offset=".64" stop-color="${c}"/><stop offset=".74" stop-color="${dim(c, 0.16 * strength)}"/><stop offset="1" stop-color="${dim(c, 0.3 * strength)}"/></linearGradient>`);
+    return this.key(`vol${c}${strength}`, id => `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${shade(c, 0.13 * strength)}"/><stop offset=".34" stop-color="${shade(c, 0.13 * strength)}"/><stop offset=".34" stop-color="${c}"/><stop offset=".68" stop-color="${c}"/><stop offset=".68" stop-color="${shade(c, -0.2 * strength)}"/><stop offset="1" stop-color="${shade(c, -0.26 * strength)}"/></linearGradient>`);
   }
-  /** Painted cylinder (limbs, poles). */
+  /** Cel-shaded cylinder (limbs, poles). */
   cyl(c: string): string {
-    return this.key(`cyl${c}`, id => `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${lit(c, 0.1)}"/><stop offset=".28" stop-color="${lit(c, 0.12)}"/><stop offset=".36" stop-color="${c}"/><stop offset=".62" stop-color="${c}"/><stop offset=".74" stop-color="${dim(c, 0.2)}"/><stop offset="1" stop-color="${dim(c, 0.3)}"/></linearGradient>`);
+    return this.key(`cyl${c}`, id => `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${shade(c, 0.12)}"/><stop offset=".3" stop-color="${shade(c, 0.12)}"/><stop offset=".3" stop-color="${c}"/><stop offset=".66" stop-color="${c}"/><stop offset=".66" stop-color="${shade(c, -0.24)}"/><stop offset="1" stop-color="${shade(c, -0.28)}"/></linearGradient>`);
   }
-  /** Painted metal: warm specular streak, cool dark core. */
+  /** Painted metal: hard specular streak and dark core. */
   metal(c: string): string {
-    return this.key(`met${c}`, id => `<linearGradient id="${id}" x1="0" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="${lit(c, 0.2)}"/><stop offset=".18" stop-color="${lit(c, 0.24)}"/><stop offset=".26" stop-color="${lit(c, 0.42)}"/><stop offset=".33" stop-color="${lit(c, 0.18)}"/><stop offset=".42" stop-color="${c}"/><stop offset=".62" stop-color="${c}"/><stop offset=".72" stop-color="${dim(c, 0.24)}"/><stop offset="1" stop-color="${dim(c, 0.34)}"/></linearGradient>`);
+    return this.key(`met${c}`, id => `<linearGradient id="${id}" x1="0" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="${shade(c, 0.22)}"/><stop offset=".22" stop-color="${shade(c, 0.22)}"/><stop offset=".22" stop-color="${shade(c, 0.42)}"/><stop offset=".3" stop-color="${shade(c, 0.42)}"/><stop offset=".3" stop-color="${c}"/><stop offset=".62" stop-color="${c}"/><stop offset=".62" stop-color="${shade(c, -0.25)}"/><stop offset="1" stop-color="${shade(c, -0.32)}"/></linearGradient>`);
   }
   /** Radial glow/sphere. */
   orb(c: string, hot = '#ffffff'): string {
@@ -85,61 +81,11 @@ export class Paint {
   filterBlur(dev = 3): string {
     return this.key(`fb${dev}`, id => `<filter id="${id}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="${dev}"/></filter>`);
   }
-  /**
-   * The hand-painted look: wobbles every edge like an inked brush line, mottles the paint with
-   * soft brush blotches, and dusts it with paper grain, keeping everything inside the silhouette.
-   */
-  painted(wobble = 2.6, seed = 4): string {
-    return this.key(`paint${wobble}${seed}`, id => `<filter id="${id}" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="${seed}" result="wob"/>
-      <feDisplacementMap in="SourceGraphic" in2="wob" scale="${wobble}" xChannelSelector="R" yChannelSelector="G" result="ink"/>
-      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.06" numOctaves="3" seed="${seed + 9}" result="stroke"/>
-      <feColorMatrix in="stroke" type="matrix" values="0 0 0 0 1  0 0 0 0 .95  0 0 0 0 .85  2.2 0 0 0 -1.05" result="lightA"/>
-      <feColorMatrix in="stroke" type="matrix" values="0 0 0 0 .16  0 0 0 0 .08  0 0 0 0 .2  -2.2 0 0 0 1.05" result="darkA"/>
-      <feComposite in="lightA" in2="ink" operator="in" result="lightIn"/>
-      <feComposite in="darkA" in2="ink" operator="in" result="darkIn"/>
-      <feBlend in="lightIn" in2="ink" mode="soft-light" result="p1"/>
-      <feBlend in="darkIn" in2="p1" mode="multiply" result="p2"/>
-      <feComposite in="p2" in2="ink" operator="arithmetic" k2=".55" k3=".45" result="p3"/>
-      <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="1" seed="${seed + 3}" result="grain"/>
-      <feColorMatrix in="grain" type="matrix" values="0 0 0 0 .1  0 0 0 0 .05  0 0 0 0 .08  0 0 -1.3 0 .62" result="grainA"/>
-      <feComposite in="grainA" in2="ink" operator="in" result="grainIn"/>
-      <feComposite in="grainIn" in2="p3" operator="over" result="grained"/>
-      <feMorphology in="ink" operator="erode" radius="2.2" result="core"/>
-      <feGaussianBlur in="core" stdDeviation="2.6" result="coreSoft"/>
-      <feComposite in="ink" in2="coreSoft" operator="out" result="rimMask"/>
-      <feFlood flood-color="#2a1430" flood-opacity=".38"/>
-      <feComposite in2="rimMask" operator="in" result="rim"/>
-      <feComposite in="rim" in2="grained" operator="over" result="shaded"/>
-      <feComposite in="shaded" in2="ink" operator="in" result="body"/>
-      <feMorphology in="ink" operator="dilate" radius="${(wobble * 0.55).toFixed(1)}" result="fat"/>
-      <feFlood flood-color="${INK}"/>
-      <feComposite in2="fat" operator="in" result="contour"/>
-      <feMerge><feMergeNode in="contour"/><feMergeNode in="body"/></feMerge>
-    </filter>`);
-  }
-  /** Cheaper painted look for big scenes: wobbly ink and brush streaks only. */
-  paintedLite(wobble = 3, seed = 4): string {
-    return this.key(`plite${wobble}${seed}`, id => `<filter id="${id}" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="1" seed="${seed}" result="wob"/>
-      <feDisplacementMap in="SourceGraphic" in2="wob" scale="${wobble}" xChannelSelector="R" yChannelSelector="G" result="ink"/>
-      <feTurbulence type="fractalNoise" baseFrequency="0.015 0.07" numOctaves="2" seed="${seed + 9}" result="stroke"/>
-      <feColorMatrix in="stroke" type="matrix" values="0 0 0 0 .14  0 0 0 0 .08  0 0 0 0 .18  -2 0 0 0 1" result="darkA"/>
-      <feComposite in="darkA" in2="ink" operator="in" result="darkIn"/>
-      <feBlend in="darkIn" in2="ink" mode="multiply"/>
-    </filter>`);
-  }
   defsSvg(): string { return `<defs>${this.defs.join('')}</defs>`; }
 }
 
 /** Outlined shape helper. */
-/** Outlined shape with a second, looser sketch line riding the ink, like a pencil under-drawing. */
-export const sh = (d: string, fill: string, sw = 1.6, extra = '') => sw <= 0 || fill === 'none'
-  ? `<path d="${d}" fill="${fill}" stroke="${INK}" stroke-width="${Math.max(sw, 0)}" stroke-linejoin="round" ${extra}/>`
-  : `<path d="${d}" fill="${fill}" stroke="${INK}" stroke-width="${sw}" stroke-linejoin="round" stroke-linecap="round" ${extra}/><path d="${d}" fill="none" stroke="${INK}" stroke-width="${(sw * 0.38).toFixed(2)}" stroke-linejoin="round" opacity=".5" transform="translate(${(sw * 0.45).toFixed(2)} ${(-sw * 0.35).toFixed(2)})"/>`;
-
-/** Animations that must live inside the SVG (it is rendered as an image). */
-export const SVG_ANIM = `<style>.flicker,.flame{animation:fl .7s infinite alternate;transform-box:fill-box;transform-origin:center bottom}@keyframes fl{to{opacity:.82;transform:scaleY(1.06)}}.aura-pulse{animation:ap 2s infinite}@keyframes ap{50%{opacity:.3}}.float{animation:fo 2s infinite alternate}@keyframes fo{to{transform:translateY(-4px)}}</style>`;
+export const sh = (d: string, fill: string, sw = 1.6, extra = '') => `<path d="${d}" fill="${fill}" stroke="${INK}" stroke-width="${sw}" stroke-linejoin="round" stroke-linecap="round" ${extra}/>`;
 /** Unoutlined detail line. */
 export const ln = (d: string, color: string, w = 1, extra = '') => `<path d="${d}" fill="none" stroke="${color}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" ${extra}/>`;
 /** Tapered limb between two points with radii r1 → r2, as an outlined path. */

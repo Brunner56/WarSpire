@@ -1,5 +1,5 @@
 // Painted, themed battle scenes for every dungeon and raid (Warcraft III-inspired).
-import { Paint, INK, sh, ln, shade, mix, SVG_ANIM } from './paint';
+import { Paint, INK, sh, ln, shade, mix } from './paint';
 export { shade };
 
 const W = 400, H = 300, FLOOR = 238;
@@ -115,6 +115,5 @@ export function backdropSvg(dungeonId: string, c0: string, c1: string): string {
       body += floorTiles(P, shade(t.stone, -0.06)) + fog(P, t.fogC!, dungeonId === 'strat' ? 0.45 : 0.25);
     }
   }
-  const f = P.paintedLite(3, dungeonId.length);
-  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice" width="400" height="300" xmlns="http://www.w3.org/2000/svg">${SVG_ANIM}${P.defsSvg().replace('</defs>', defs + '</defs>')}<g filter="${f}">${body}</g><rect width="${W}" height="${H}" fill="url(#${P.id}vig)"/></svg>`;
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">${P.defsSvg().replace('</defs>', defs + '</defs>')}${body}</svg>`;
 }

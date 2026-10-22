@@ -2,14 +2,13 @@
 // elementals and demons are hand-built painted templates. All creatures face left (toward the hero).
 import type { EnemyArt } from '../../engine/types';
 import { dollSvg } from './doll';
-import { Paint, INK, sh, ln, limb, rivet, shade, mix, SVG_ANIM } from './paint';
+import { Paint, INK, sh, ln, limb, rivet, shade, mix } from './paint';
 
 const BONE = '#efe4c8';
 
 function wrap(P: Paint, inner: string, size = 1, vb = '0 0 160 150'): string {
   const px = Math.round(118 * size);
-  const f = P.painted(2.8, inner.length % 13);
-  return `<svg viewBox="${vb}" width="${px}" height="${Math.round(px * 150 / 160)}" xmlns="http://www.w3.org/2000/svg">${SVG_ANIM}${P.defsSvg()}<g filter="${f}">${inner}</g></svg>`;
+  return `<svg viewBox="${vb}" width="${px}" height="${Math.round(px * 150 / 160)}" xmlns="http://www.w3.org/2000/svg">${P.defsSvg()}${inner}</svg>`;
 }
 
 const shadow = (rx = 46) => `<ellipse cx="82" cy="142" rx="${rx}" ry="6" fill="#000" opacity=".45"/>`;

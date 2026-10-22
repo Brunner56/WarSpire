@@ -3,7 +3,7 @@
 // cel shading with heavy ink and interior muscle lines. Every equipped item is drawn.
 import type { Item, RaceId, Slot, WeaponType, OffType } from '../../engine/types';
 import { RACE_BY_ID } from '../../data/races';
-import { Paint, INK, sh, ln, rivet, shade, mix, mirror, hatch, SVG_ANIM } from './paint';
+import { Paint, INK, sh, ln, rivet, shade, mix, mirror, hatch } from './paint';
 
 export { shade };
 
@@ -380,8 +380,7 @@ export function dollSvg(spec: DollSpec, opts: { w?: number; h?: number; pet?: st
   out.push('</g>');
   if (opts.pet) out.push(`<text x="182" y="250" font-size="30" text-anchor="middle">${opts.pet}</text>`);
   const flip = spec.flip ? 'translate(200,0) scale(-1,1)' : '';
-  const paintF = P.painted(2.4, spec.race.length + spec.hair);
-  return `<svg viewBox="-22 -40 248 302" width="${opts.w ?? 120}" height="${opts.h ?? 165}" xmlns="http://www.w3.org/2000/svg">${SVG_ANIM}${P.defsSvg()}<g transform="${flip}"><g filter="${paintF}">${out.join('')}</g></g></svg>`;
+  return `<svg viewBox="-22 -40 248 302" width="${opts.w ?? 120}" height="${opts.h ?? 165}" xmlns="http://www.w3.org/2000/svg">${P.defsSvg()}<g transform="${flip}">${out.join('')}</g></svg>`;
 }
 
 export function itemsToDoll(items: Item[]): DollGear[] {

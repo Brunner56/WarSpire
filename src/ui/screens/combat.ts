@@ -5,7 +5,6 @@ import { cardEl, showCard, hpBar, statusRow } from '../components';
 import { enemySvg } from '../render/enemyArt';
 import { dollSvg, itemsToDoll } from '../render/doll';
 import { backdropSvg } from '../render/backdrop';
-import { svgImg } from '../render/toImg';
 import { DUNGEON_BY_ID } from '../../data/dungeons';
 import { wowIcon, localArt, PET_ICONS } from '../wowart';
 import { CLASS_BY_ID } from '../../data/classes';
@@ -70,14 +69,14 @@ function enemyInfo(c: Combat, e: Enemy) {
 }
 
 function enemyArtEl(e: Enemy): HTMLElement {
-  const el = h('div', { class: 'eart' }, svgImg(enemySvg(e.def.art)));
+  const el = h('div', { class: 'eart', html: enemySvg(e.def.art) });
   // Private art override: public/wow/enemies/<enemy id>.png
   localArt(`enemies/${e.def.id}.png`, url => { el.innerHTML = ''; el.appendChild(h('img', { class: 'eimg', src: url, alt: e.name })); });
   return el;
 }
 
 function backdropEl(dungeonId: string): HTMLElement {
-  const el = h('div', { class: 'backdrop' }, svgImg(backdropSvg(dungeonId, ...DUNGEON_BY_ID[dungeonId].colors), 'bdimg'));
+  const el = h('div', { class: 'backdrop', html: backdropSvg(dungeonId, ...DUNGEON_BY_ID[dungeonId].colors) });
   // Private art override: public/wow/backdrops/<dungeon id>.jpg
   localArt(`backdrops/${dungeonId}.jpg`, url => { el.innerHTML = ''; el.style.background = `center bottom / cover no-repeat url(${url})`; el.classList.add('photo'); });
   return el;
@@ -141,7 +140,7 @@ export function renderCombat(app: App, run: RunState, ch: Character, c: Combat):
   const player = h('div', { class: `player ${(selCard && !needT) ? 'castzone' : ''}`, 'data-uid': '1', onclick: () => {
     if (selected !== null && selCard && !needT) { const i = selected; act(() => { if (c.playCard(i)) selected = null; }); }
   } },
-    h('div', { class: 'pdoll' }, svgImg(dollSvg({ race: ch.race, skin: ch.look.skin, hair: ch.look.hair, hairColor: ch.look.hairColor, face: ch.look.face, gear, team: CLASS_COLOR[ch.cls], aura: p.form === 'moonkin' ? '#8acfff' : p.st.shadowform ? '#7a3aaa' : undefined }, { w: 178, h: 216, pet: p.pet?.icon }))),
+    h('div', { class: 'pdoll', html: dollSvg({ race: ch.race, skin: ch.look.skin, hair: ch.look.hair, hairColor: ch.look.hairColor, face: ch.look.face, gear, team: CLASS_COLOR[ch.cls], aura: p.form === 'moonkin' ? '#8acfff' : p.st.shadowform ? '#7a3aaa' : undefined }, { w: 178, h: 216, pet: p.pet?.icon }) }),
     h('div', { class: 'pinfo' },
       hpBar(p.hp, p.maxHp, p.block, p.st.absorb ?? 0),
       statusRow(p),

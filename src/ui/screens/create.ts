@@ -5,7 +5,6 @@ import { CLASSES, CLASS_BY_ID } from '../../data/classes';
 import { PETS, HUNTER_PETS, CLASS_MECHANIC_TEXT } from '../../data/mechanics';
 import { STARTER_GEAR, makeItem } from '../../data/items';
 import { dollSvg, itemsToDoll } from '../render/doll';
-import { svgImg } from '../render/toImg';
 import { createCharacter } from '../../engine/save';
 import { wowIcon, RACE_ICONS, CLASS_ICONS, PET_ICONS } from '../wowart';
 import type { ClassId, RaceId } from '../../engine/types';
@@ -33,7 +32,7 @@ registerScreen('create', (app: App) => {
 
   const preview = () => {
     const gear = itemsToDoll(STARTER_GEAR[d.cls].map((t, i) => makeItem(t, i)));
-    return h('div', { class: 'svgwrap' }, svgImg(dollSvg({ race: d.race, skin: d.skin, hair: d.hair, hairColor: d.hairColor, face: d.face, gear, team: cls.color }, { w: 150, h: 200, pet: d.cls === 'hunter' ? PETS[d.pet].icon : undefined })));
+    return h('div', { class: 'svgwrap', html: dollSvg({ race: d.race, skin: d.skin, hair: d.hair, hairColor: d.hairColor, face: d.face, gear, team: cls.color }, { w: 150, h: 200, pet: d.cls === 'hunter' ? PETS[d.pet].icon : undefined }) });
   };
 
   const stepper = (label: string, key: 'skin' | 'hair' | 'hairColor' | 'face', max: number) =>
