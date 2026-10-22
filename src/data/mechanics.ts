@@ -136,7 +136,7 @@ export const CLASS_HOOKS: Partial<Record<ClassId, HookSet>> = {
 };
 
 export const CLASS_MECHANIC_TEXT: Record<ClassId, string> = {
-  warrior: 'Rage: start combat with none. Gain 3 Rage each turn, plus 1 when an enemy hits you (up to 2 per enemy turn). Only 2 unspent Rage carries over; you can hold at most 6.',
+  warrior: 'Rage: start combat with none. Gain 3 Rage each turn, plus 1 the first time an enemy hits you each enemy turn. Only 1 unspent Rage carries over; you can hold at most 5. Extra Rage always costs Health.',
   paladin: 'Seals: keep one Seal active to empower your Attacks, then Judge it for a burst effect.',
   hunter: 'Pet: your loyal companion attacks at the end of each of your turns, preferring Marked targets.',
   rogue: 'Combo Points & Stealth: build Combo Points and spend them on Finishers. You begin each fight in Stealth, enabling Openers.',

@@ -7,7 +7,7 @@ const W = (d: D): CardDef => ({ ...d, cls: 'warrior' });
 export const WARRIOR_CARDS: CardDef[] = [
   W({ id: 'w_heroic', name: 'Heroic Strike', type: 'attack', rarity: 'starter', cost: 1, a: [dmg(6)], icon: '⚔️' }),
   W({ id: 'w_parry', name: 'Parry', type: 'skill', rarity: 'starter', cost: 1, a: [blk(5)], icon: '🛡️' }),
-  W({ id: 'w_charge', name: 'Charge', type: 'attack', rarity: 'starter', cost: 0, a: [dmg(4), res(1)], u: [dmg(6), res(2)], kw: ['innate', 'cooldown'], icon: '🐂' }),
+  W({ id: 'w_charge', name: 'Charge', type: 'attack', rarity: 'starter', cost: 0, a: [dmg(5), app('vuln', 1)], u: [dmg(7), app('vuln', 2)], kw: ['innate', 'cooldown'], icon: '🐂' }),
   // Arms
   W({ id: 'w_rend', name: 'Rend', tree: 'arms', type: 'attack', rarity: 'common', cost: 1, a: [dmg(3), app('bleed', 4)], u: [dmg(4), app('bleed', 6)], icon: '🩸' }),
   W({ id: 'w_overpower', name: 'Overpower', tree: 'arms', type: 'attack', rarity: 'common', cost: 1, a: [dmg(7), draw(1)], u: [dmg(10), draw(1)], icon: '⚡' }),
@@ -28,8 +28,8 @@ export const WARRIOR_CARDS: CardDef[] = [
   W({ id: 'w_battle_shout', name: 'Battle Shout', tree: 'arms', type: 'aura', rarity: 'uncommon', cost: 1, a: [self('str', 2)], u: [self('str', 3)], lvl: 8, icon: '📯' }),
   // Fury
   W({ id: 'w_cleave', name: 'Cleave', tree: 'fury', type: 'attack', rarity: 'common', cost: 1, a: [aoe(7)], icon: '🪓' }),
-  W({ id: 'w_bloodrage', name: 'Bloodrage', tree: 'fury', type: 'skill', rarity: 'common', cost: 0, a: [lose(4), res(2)], u: [lose(3), res(3)], kw: ['cooldown'], icon: '🩸' }),
-  W({ id: 'w_berserker', name: 'Berserker Rage', tree: 'fury', type: 'skill', rarity: 'common', cost: 0, a: [res(2)], u: [res(3)], kw: ['cooldown'], icon: '😤' }),
+  W({ id: 'w_bloodrage', name: 'Bloodrage', tree: 'fury', type: 'skill', rarity: 'rare', cost: 0, lvl: 10, a: [lose(5), res(2)], u: [lose(4), res(3)], kw: ['cooldown'], icon: '🩸' }),
+  W({ id: 'w_berserker', name: 'Berserker Rage', tree: 'fury', type: 'skill', rarity: 'rare', cost: 0, lvl: 32, a: [lose(6), res(2), self('str', 1)], u: [lose(5), res(3), self('str', 2)], kw: ['cooldown'], icon: '😤' }),
   W({ id: 'w_whirlwind', name: 'Whirlwind', tree: 'fury', type: 'attack', rarity: 'uncommon', cost: 2, lvl: 18, a: [aoe(5, { hits: 2 })], u: [aoe(7, { hits: 2 })], icon: '🌪️' }),
   W({ id: 'w_intercept', name: 'Intercept', tree: 'fury', type: 'attack', rarity: 'uncommon', cost: 1, lvl: 12, a: [dmg(5), app('stun', 1)], kw: ['cooldown'], icon: '💥' }),
   W({ id: 'w_bloodthirst', name: 'Bloodthirst', tree: 'fury', type: 'attack', rarity: 'rare', cost: 1, talent: 'w_fury_cap', a: [dmg(10, { ls: 0.5 })], u: [dmg(14, { ls: 0.5 })], icon: '🩸' }),

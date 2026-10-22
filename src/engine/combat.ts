@@ -45,10 +45,10 @@ const RES_NAME: Record<ClassId, Player['resName']> = {
 };
 
 /** Max Rage held at once, and how much unspent Rage survives the end of your turn. */
-export const RAGE_CAP = 6;
-export const RAGE_KEEP = 2;
+export const RAGE_CAP = 5;
+export const RAGE_KEEP = 1;
 /** Rage gained from enemy hits is limited per enemy phase. */
-export const RAGE_FROM_HITS = 2;
+export const RAGE_FROM_HITS = 1;
 export const MAX_HAND = 10;
 
 export class Combat {

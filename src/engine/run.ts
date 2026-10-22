@@ -4,7 +4,7 @@ import { Rng } from './rng';
 import { Combat, Provider } from './combat';
 import { Character, collectProviders, derive, Derived, equippedItems, talentCards, xpToNext, MAX_LEVEL } from './character';
 import { DUNGEON_BY_ID, tierScale, DungeonDef, ActDef } from '../data/dungeons';
-import { ALL_CARDS, getCard, canUpgrade, POTIONS } from '../data/cards';
+import { ALL_CARDS, getCard, canUpgrade, cardActions, POTIONS } from '../data/cards';
 import { CLASS_BY_ID, starterDeck } from '../data/classes';
 import { PETS } from '../data/mechanics';
 import { EVENTS, EventApi, EventResult } from '../data/events';
@@ -326,10 +326,15 @@ function cardChoices(run: RunState, ch: Character, r: Rng, kind: 'normal' | 'eli
     void rarity;
   }
   if (kind !== 'boss' && r.chance(0.08)) {
-    const neutral = ALL_CARDS.filter(c => c.cls === 'neutral');
+    const neutral = neutralPool(ch.cls);
     out[out.length - 1] = { uid: uid++, id: r.pick(neutral).id, up: false };
   }
   return out;
+}
+
+/** Neutral cards offered to a class. Warriors only get Rage from rare, HP-costing class cards. */
+function neutralPool(cls: ClassId) {
+  return ALL_CARDS.filter(c => c.cls === 'neutral' && !(cls === 'warrior' && cardActions(c, false).some(a => a.k === 'res')));
 }
 
 export function takeRewardCard(run: RunState, idx: number) {
@@ -469,7 +474,7 @@ function makeShop(run: RunState, ch: Character, r: Rng): ShopStock {
     const base = rar === 'rare' ? 140 : rar === 'uncommon' ? 72 : 48;
     return { card, price: Math.round(base * (0.9 + r.next() * 0.2) * m * (card.up ? 1.4 : 1)) };
   });
-  const neutral = ALL_CARDS.filter(c => c.cls === 'neutral');
+  const neutral = neutralPool(ch.cls);
   for (const n of r.sample(neutral, 2)) cards.push({ card: { uid: 9000 + cards.length, id: n.id, up: false }, price: Math.round((n.rarity === 'rare' ? 110 : 60) * m) });
   const ug = uidGen(run);
   const items = [

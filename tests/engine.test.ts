@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ALL_CARDS, getCard } from '../src/data/cards';
+import { ALL_CARDS, getCard, cardActions } from '../src/data/cards';
 import { DUNGEONS, allEnemyIds, getEnemyDef } from '../src/data/dungeons';
 import { CLASSES, starterDeck } from '../src/data/classes';
 import { RACES } from '../src/data/races';
@@ -137,7 +137,15 @@ describe('combat basics', () => {
     c.endPlayerTurn();
     const e = c.alive()[0];
     for (let i = 0; i < 5; i++) c.enemyHit(e, 5);
-    expect(c.p.res).toBeLessThanOrEqual(4);
+    expect(c.p.res).toBeLessThanOrEqual(2);
+  });
+  it('every Rage-generating warrior card is rare and costs HP', () => {
+    for (const def of ALL_CARDS.filter(d => d.cls === 'warrior')) for (const up of [false, true]) {
+      const acts = cardActions(def, up);
+      if (!acts.some(a => a.k === 'res')) continue;
+      expect(def.rarity, def.id).toBe('rare');
+      expect(acts.some(a => a.k === 'hp'), def.id).toBe(true);
+    }
   });
   it('bot combat terminates', () => {
     const ch = makeChar('rogue', 'undead', 'combat', 1);
