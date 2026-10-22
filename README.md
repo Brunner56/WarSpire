@@ -33,7 +33,16 @@ CAMPAIGN=1 TREES=3 npx vitest run tests/campaign.test.ts
 
 ## Playing on iOS
 
-### Option A — Add to Home Screen (no Mac needed)
+### Option A — Free website with GitHub Pages (no Mac needed)
+This repo includes a workflow (`.github/workflows/pages.yml`) that builds and publishes the game every time `main` changes.
+One-time setup on github.com:
+1. **Settings → General → Danger Zone → Change visibility → Public** (free GitHub accounts can only use Pages on public repos).
+2. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
+3. Merge the game's pull request into `main` (or push to `main`). The **Actions** tab shows the deploy; when it's green the game is live at `https://<your-username>.github.io/WarSpire/`.
+
+Then open that address in Safari on your iPhone and tap **Share → Add to Home Screen** to install it like an app.
+
+### Option A2 — Any other static host
 Host `dist/` on any HTTPS static host (GitHub Pages, Netlify, etc.), open it in Safari, then **Share → Add to Home Screen**. It runs full-screen, offline-capable, and saves progress locally.
 
 ### Option B — Native iOS app with Capacitor (requires a Mac with Xcode)
