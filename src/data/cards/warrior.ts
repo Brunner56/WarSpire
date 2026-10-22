@@ -7,10 +7,10 @@ const W = (d: D): CardDef => ({ ...d, cls: 'warrior' });
 export const WARRIOR_CARDS: CardDef[] = [
   W({ id: 'w_heroic', name: 'Heroic Strike', type: 'attack', rarity: 'starter', cost: 1, a: [dmg(6)], icon: '⚔️' }),
   W({ id: 'w_parry', name: 'Parry', type: 'skill', rarity: 'starter', cost: 1, a: [blk(5)], icon: '🛡️' }),
-  W({ id: 'w_charge', name: 'Charge', type: 'attack', rarity: 'starter', cost: 0, a: [dmg(4), res(2)], u: [dmg(6), res(3)], kw: ['innate', 'cooldown'], icon: '🐂' }),
+  W({ id: 'w_charge', name: 'Charge', type: 'attack', rarity: 'starter', cost: 0, a: [dmg(4), res(1)], u: [dmg(6), res(2)], kw: ['innate', 'cooldown'], icon: '🐂' }),
   // Arms
   W({ id: 'w_rend', name: 'Rend', tree: 'arms', type: 'attack', rarity: 'common', cost: 1, a: [dmg(3), app('bleed', 4)], u: [dmg(4), app('bleed', 6)], icon: '🩸' }),
-  W({ id: 'w_overpower', name: 'Overpower', tree: 'arms', type: 'attack', rarity: 'common', cost: 0, a: [dmg(4), draw(1)], u: [dmg(7), draw(1)], icon: '⚡' }),
+  W({ id: 'w_overpower', name: 'Overpower', tree: 'arms', type: 'attack', rarity: 'common', cost: 1, a: [dmg(7), draw(1)], u: [dmg(10), draw(1)], icon: '⚡' }),
   W({ id: 'w_hamstring', name: 'Hamstring', tree: 'arms', type: 'attack', rarity: 'common', cost: 1, a: [dmg(5), app('weak', 2)], icon: '🦵' }),
   W({ id: 'w_slam', name: 'Slam', tree: 'arms', type: 'attack', rarity: 'common', cost: 2, a: [dmg(14)], lvl: 4, icon: '🔨' }),
   W({ id: 'w_sweeping', name: 'Sweeping Strikes', tree: 'arms', type: 'skill', rarity: 'uncommon', cost: 1, a: [self('sweep', 3)], u: [self('sweep', 5)], lvl: 14, icon: '🌀' }),
@@ -28,15 +28,15 @@ export const WARRIOR_CARDS: CardDef[] = [
   W({ id: 'w_battle_shout', name: 'Battle Shout', tree: 'arms', type: 'aura', rarity: 'uncommon', cost: 1, a: [self('str', 2)], u: [self('str', 3)], lvl: 8, icon: '📯' }),
   // Fury
   W({ id: 'w_cleave', name: 'Cleave', tree: 'fury', type: 'attack', rarity: 'common', cost: 1, a: [aoe(7)], icon: '🪓' }),
-  W({ id: 'w_bloodrage', name: 'Bloodrage', tree: 'fury', type: 'skill', rarity: 'common', cost: 0, a: [lose(3), res(2), draw(1)], u: [lose(2), res(3), draw(1)], icon: '🩸' }),
-  W({ id: 'w_berserker', name: 'Berserker Rage', tree: 'fury', type: 'skill', rarity: 'common', cost: 0, a: [res(3)], u: [res(4)], kw: ['cooldown'], icon: '😤' }),
+  W({ id: 'w_bloodrage', name: 'Bloodrage', tree: 'fury', type: 'skill', rarity: 'common', cost: 0, a: [lose(4), res(2)], u: [lose(3), res(3)], kw: ['cooldown'], icon: '🩸' }),
+  W({ id: 'w_berserker', name: 'Berserker Rage', tree: 'fury', type: 'skill', rarity: 'common', cost: 0, a: [res(2)], u: [res(3)], kw: ['cooldown'], icon: '😤' }),
   W({ id: 'w_whirlwind', name: 'Whirlwind', tree: 'fury', type: 'attack', rarity: 'uncommon', cost: 2, lvl: 18, a: [aoe(5, { hits: 2 })], u: [aoe(7, { hits: 2 })], icon: '🌪️' }),
   W({ id: 'w_intercept', name: 'Intercept', tree: 'fury', type: 'attack', rarity: 'uncommon', cost: 1, lvl: 12, a: [dmg(5), app('stun', 1)], kw: ['cooldown'], icon: '💥' }),
   W({ id: 'w_bloodthirst', name: 'Bloodthirst', tree: 'fury', type: 'attack', rarity: 'rare', cost: 1, talent: 'w_fury_cap', a: [dmg(10, { ls: 0.5 })], u: [dmg(14, { ls: 0.5 })], icon: '🩸' }),
   W({ id: 'w_recklessness', name: 'Recklessness', tree: 'fury', type: 'skill', rarity: 'rare', cost: 1, lvl: 34, a: [self('critnext', 3), self('vuln', 2)], u: [self('critnext', 4), self('vuln', 1)], kw: ['cooldown'], icon: '😈' }),
   W({ id: 'w_deathwish', name: 'Death Wish', tree: 'fury', type: 'aura', rarity: 'rare', cost: 2, uc: 1, lvl: 40, a: [self('deathwish', 1)], icon: '☠️' }),
-  W({ id: 'w_rampage', name: 'Raging Blow', tree: 'fury', type: 'attack', rarity: 'common', cost: 1, lvl: 6, text: 'Deal 4 damage twice. Gain 1 Rage.',
-    a: [dmg(4, { hits: 2 }), res(1)], u: [dmg(6, { hits: 2 }), res(1)], icon: '👊' }),
+  W({ id: 'w_rampage', name: 'Raging Blow', tree: 'fury', type: 'attack', rarity: 'common', cost: 1, lvl: 6, text: 'Deal 4 damage twice.',
+    a: [dmg(4, { hits: 2 })], u: [dmg(6, { hits: 2 })], icon: '👊' }),
   // Protection
   W({ id: 'w_sunder', name: 'Sunder Armor', tree: 'prot', type: 'attack', rarity: 'common', cost: 1, a: [dmg(5), app('vuln', 2)], icon: '🔩' }),
   W({ id: 'w_shield_block', name: 'Shield Block', tree: 'prot', type: 'skill', rarity: 'common', cost: 1, a: [blk(8)], u: [blk(11)], icon: '🛡️' }),

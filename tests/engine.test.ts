@@ -127,6 +127,18 @@ describe('combat basics', () => {
     c.enemyHit(e, 6);
     expect(c.p.hp).toBe(38);
   });
+  it('rage is bounded: starts at 0, fades at end of turn, hit rage capped', () => {
+    const c = new Combat({ cls: 'warrior', name: 't', deck: Array.from({ length: 10 }, (_, i) => ({ uid: i, id: 'w_parry', up: false })), hp: 500, maxHp: 500, ap: 0, sp: 0, physCrit: 0, spellCrit: 0, startBlock: 0,
+      passives: [], pet: null, enemies: ['rfc_trogg'], hpScale: 1, dmgScale: 1, seed: 1 });
+    c.start();
+    expect(c.p.res).toBe(3);
+    c.gainRes(20);
+    expect(c.p.res).toBe(c.rageCap());
+    c.endPlayerTurn();
+    const e = c.alive()[0];
+    for (let i = 0; i < 5; i++) c.enemyHit(e, 5);
+    expect(c.p.res).toBeLessThanOrEqual(4);
+  });
   it('bot combat terminates', () => {
     const ch = makeChar('rogue', 'undead', 'combat', 1);
     void ch;

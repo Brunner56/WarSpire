@@ -68,7 +68,7 @@ const S = (id: string, name: string, cls: ClassId, tier: 1 | 2, look: ItemLook, 
 
 export const SETS: SetDef[] = [
   S('might', 'Battlegear of Might', 'warrior', 1, { c1: '#8b2c1a', c2: '#d4a017', style: 'spiked' },
-    { desc: 'Start each combat with 3 Rage.', hooks: P.startRes(3) },
+    { desc: 'Start each combat with 2 Rage.', hooks: P.startRes(2) },
     { desc: 'Whenever you take unblocked damage, gain 2 Block.', hooks: { onHurt: (c, _n, dealt) => { if (dealt > 0) c.gainBlock(2, undefined, true); } } }),
   S('wrath', 'Battlegear of Wrath', 'warrior', 2, { c1: '#1c2a4a', c2: '#c0c0c0', style: 'spiked' },
     { desc: 'Attacks deal +3 damage.', hooks: P.dmgAttack(3) },
