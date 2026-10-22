@@ -39,17 +39,17 @@ export class Paint {
     return ref;
   }
 
-  /** Soft volumetric fill: lit top-left, shadowed bottom-right. */
+  /** Cel-shaded volume: hard-edged light / base / shadow bands, light from top-left. */
   vol(c: string, strength = 1): string {
-    return this.key(`vol${c}${strength}`, id => `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${shade(c, 0.16 * strength)}"/><stop offset=".45" stop-color="${c}"/><stop offset="1" stop-color="${shade(c, -0.26 * strength)}"/></linearGradient>`);
+    return this.key(`vol${c}${strength}`, id => `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${shade(c, 0.13 * strength)}"/><stop offset=".34" stop-color="${shade(c, 0.13 * strength)}"/><stop offset=".34" stop-color="${c}"/><stop offset=".68" stop-color="${c}"/><stop offset=".68" stop-color="${shade(c, -0.2 * strength)}"/><stop offset="1" stop-color="${shade(c, -0.26 * strength)}"/></linearGradient>`);
   }
-  /** Horizontal cylinder shading (limbs, poles). */
+  /** Cel-shaded cylinder (limbs, poles). */
   cyl(c: string): string {
-    return this.key(`cyl${c}`, id => `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${shade(c, -0.22)}"/><stop offset=".35" stop-color="${shade(c, 0.12)}"/><stop offset=".55" stop-color="${c}"/><stop offset="1" stop-color="${shade(c, -0.3)}"/></linearGradient>`);
+    return this.key(`cyl${c}`, id => `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${shade(c, 0.12)}"/><stop offset=".3" stop-color="${shade(c, 0.12)}"/><stop offset=".3" stop-color="${c}"/><stop offset=".66" stop-color="${c}"/><stop offset=".66" stop-color="${shade(c, -0.24)}"/><stop offset="1" stop-color="${shade(c, -0.28)}"/></linearGradient>`);
   }
-  /** Polished metal with a hard specular band. */
+  /** Painted metal: hard specular streak and dark core. */
   metal(c: string): string {
-    return this.key(`met${c}`, id => `<linearGradient id="${id}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${shade(c, 0.32)}"/><stop offset=".28" stop-color="${shade(c, 0.05)}"/><stop offset=".42" stop-color="${shade(c, 0.4)}"/><stop offset=".5" stop-color="${shade(c, -0.05)}"/><stop offset="1" stop-color="${shade(c, -0.35)}"/></linearGradient>`);
+    return this.key(`met${c}`, id => `<linearGradient id="${id}" x1="0" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="${shade(c, 0.22)}"/><stop offset=".22" stop-color="${shade(c, 0.22)}"/><stop offset=".22" stop-color="${shade(c, 0.42)}"/><stop offset=".3" stop-color="${shade(c, 0.42)}"/><stop offset=".3" stop-color="${c}"/><stop offset=".62" stop-color="${c}"/><stop offset=".62" stop-color="${shade(c, -0.25)}"/><stop offset="1" stop-color="${shade(c, -0.32)}"/></linearGradient>`);
   }
   /** Radial glow/sphere. */
   orb(c: string, hot = '#ffffff'): string {
@@ -96,3 +96,21 @@ export function limb(x1: number, y1: number, x2: number, y2: number, r1: number,
   return `M${a[0].toFixed(1)} ${a[1].toFixed(1)} L${b[0].toFixed(1)} ${b[1].toFixed(1)} A${r2} ${r2} 0 0 1 ${c[0].toFixed(1)} ${c[1].toFixed(1)} L${d[0].toFixed(1)} ${d[1].toFixed(1)} A${r1} ${r1} 0 0 1 ${a[0].toFixed(1)} ${a[1].toFixed(1)}Z`;
 }
 export const rivet = (x: number, y: number, r = 1.2) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#e8dcc0" stroke="${INK}" stroke-width=".6"/>`;
+
+/** Mirror an absolute-command path (M L Q C T S H V Z) across the vertical line x = cx. */
+export function mirror(d: string, cx = 100): string {
+  const toks = d.match(/[MLQCTSHVZ]|-?\d*\.?\d+/gi) ?? [];
+  let out = '', cmd = '', rel = false, i = 0;
+  for (const t of toks) {
+    if (/[A-Z]/i.test(t)) { rel = t !== t.toUpperCase(); cmd = t.toUpperCase(); out += ' ' + t; i = 0; continue; }
+    const v = parseFloat(t);
+    const isX = cmd === 'H' || (cmd !== 'V' && i % 2 === 0);
+    out += ' ' + (isX ? (rel ? -v : +(2 * cx - v).toFixed(2)) : v);
+    i++;
+  }
+  return out.trim();
+}
+
+/** Short sketchy hatch strokes inside a shadow area. */
+export const hatch = (x: number, y: number, n: number, len = 6, gap = 3, ang = 40) =>
+  [...Array(n)].map((_, i) => `<path d="M${x + i * gap} ${y} l${(Math.cos((ang * Math.PI) / 180) * len).toFixed(1)} ${(Math.sin((ang * Math.PI) / 180) * len).toFixed(1)}" stroke="${INK}" stroke-width=".8" opacity=".45" stroke-linecap="round"/>`).join('');

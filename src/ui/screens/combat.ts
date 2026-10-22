@@ -140,7 +140,7 @@ export function renderCombat(app: App, run: RunState, ch: Character, c: Combat):
   const player = h('div', { class: `player ${(selCard && !needT) ? 'castzone' : ''}`, 'data-uid': '1', onclick: () => {
     if (selected !== null && selCard && !needT) { const i = selected; act(() => { if (c.playCard(i)) selected = null; }); }
   } },
-    h('div', { class: 'pdoll', html: dollSvg({ race: ch.race, skin: ch.look.skin, hair: ch.look.hair, hairColor: ch.look.hairColor, face: ch.look.face, gear, team: CLASS_COLOR[ch.cls], aura: p.form === 'moonkin' ? '#8acfff' : p.st.shadowform ? '#7a3aaa' : undefined }, { w: 140, h: 178, pet: p.pet?.icon }) }),
+    h('div', { class: 'pdoll', html: dollSvg({ race: ch.race, skin: ch.look.skin, hair: ch.look.hair, hairColor: ch.look.hairColor, face: ch.look.face, gear, team: CLASS_COLOR[ch.cls], aura: p.form === 'moonkin' ? '#8acfff' : p.st.shadowform ? '#7a3aaa' : undefined }, { w: 178, h: 216, pet: p.pet?.icon }) }),
     h('div', { class: 'pinfo' },
       hpBar(p.hp, p.maxHp, p.block, p.st.absorb ?? 0),
       statusRow(p),
