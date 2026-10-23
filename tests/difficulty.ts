@@ -52,3 +52,35 @@ export function difficulty(seeds: number, dungeons = DUNGEONS.map(d => d.id), ge
   }
   return rows;
 }
+
+// ---------------------------------------------------------------------------
+// Heroic/Mythic: heroes snapshotted right after they clear each dungeon on Normal during a campaign.
+
+import { campaign } from './campaign';
+
+export interface Snapshot { dungeon: string; spec: string; ch: Character }
+
+export function progressionSnapshots(specs?: string[]): Snapshot[] {
+  const out: Snapshot[] = [];
+  for (const c of CLASSES) for (const t of c.trees) {
+    const spec = `${c.id}/${t.id}`;
+    if (specs && !specs.includes(spec)) continue;
+    campaign(c.id, t.id, 1000 + c.id.length * 7 + t.id.length, 6, (dungeon, ch) => out.push({ dungeon, spec, ch: JSON.parse(JSON.stringify(ch)) }));
+  }
+  return out;
+}
+
+export function progressedRates(snaps: Snapshot[], rank: number, seeds: number, offset = 0) {
+  const byDungeon: Record<string, [number, number]> = {}, bySpec: Record<string, [number, number]> = {};
+  let wins = 0, runs = 0;
+  for (const sn of snaps) {
+    const d = DUNGEONS.find(x => x.id === sn.dungeon)!;
+    for (let s = offset; s < offset + seeds; s++) {
+      const { result } = simRun(sn.ch, d.id, 104729 * (s + 1) + d.tier * 977 + sn.spec.length * 31, rank);
+      runs++; if (result.win) wins++;
+      const bd = (byDungeon[d.id] ??= [0, 0]); bd[1]++; if (result.win) bd[0]++;
+      const bs = (bySpec[sn.spec] ??= [0, 0]); bs[1]++; if (result.win) bs[0]++;
+    }
+  }
+  return { rate: wins / Math.max(1, runs), runs, byDungeon, bySpec };
+}

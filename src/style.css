@@ -504,3 +504,15 @@ body.nomotion .d-breath, body.nomotion .enemy .eart > svg { animation: none; }
 .settings .vol { width: 3ch; text-align: right; color: var(--muted); }
 .version { text-align: center; font-size: 0.7rem; color: var(--muted); margin-top: 14px; opacity: 0.85; letter-spacing: 0.02em; }
 .version b { color: var(--gold2); font-weight: 600; }
+
+/* difficulty picker */
+.dc-actions { flex-wrap: wrap; }
+.diff-sel { display: flex; gap: 4px; flex: 1 1 100%; }
+.diff { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 2px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(0, 0, 0, 0.35); color: var(--text); font-size: 1rem; cursor: pointer; }
+.diff small { font-size: 0.62rem; color: var(--dc); font-weight: 700; letter-spacing: 0.02em; }
+.diff.on { border-color: var(--dc); box-shadow: 0 0 0 1px var(--dc), 0 0 10px color-mix(in srgb, var(--dc) 60%, transparent); background: rgba(0, 0, 0, 0.6); }
+.diff.locked { opacity: 0.4; }
+.diff-blurb { margin-top: 6px; line-height: 1.3; text-shadow: 0 1px 2px #000; }
+.hc-dead h2 { color: #ff6a5a; }
+.hc-confirm b { color: #ff8a7a; }
+.diff.closed { opacity: 0.25; filter: grayscale(1); }

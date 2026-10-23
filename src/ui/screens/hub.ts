@@ -11,7 +11,8 @@ import { SLOTS, SLOT_NAME } from '../../data/items';
 import {
   Character, xpToNext, talentPointsAvailable, talentPointsSpent, canLearnTalent, derive, collectProviders, equippedItems, classTalentsByTree, setCounts, MAX_LEVEL,
 } from '../../engine/character';
-import { HEROIC_RANKS, isUnlocked, maxRank, newRun, unlockLevel } from '../../engine/run';
+import { isUnlocked, rankUnlocked, newRun, unlockLevel, difficultyLock, commitDifficulty } from '../../engine/run';
+import { DIFFICULTIES, difficulty } from '../../data/difficulty';
 import { canEquip } from '../../engine/loot';
 import { cardEl, showCard, itemTile, itemTooltip } from '../components';
 import type { Slot } from '../../engine/types';
@@ -32,6 +33,7 @@ registerScreen('hub', (app: App) => {
       h('div', { class: 'hh-info' },
         h('div', { class: 'hh-name', style: { color: cls.color } }, ch.name),
         h('div', { class: 'hh-sub' }, `Level ${ch.level} ${RACE_BY_ID[ch.race].name} ${cls.trees.find(t => t.id === ch.spec)?.name} ${cls.name}`),
+        difficultyLock(ch) > 0 ? h('div', { class: 'tag', style: { color: difficulty(difficultyLock(ch)).color }, title: 'Permanent difficulty: this hero can never play an easier difficulty.' }, `${difficulty(difficultyLock(ch)).icon} ${difficulty(difficultyLock(ch)).name} hero`) : null,
         ch.level < MAX_LEVEL ? h('div', { class: 'xpbar' }, h('div', { class: 'fill', style: { width: `${(ch.xp / xpToNext(ch.level)) * 100}%` } }), h('span', null, `${ch.xp} / ${xpToNext(ch.level)} XP`)) : h('div', { class: 'tag' }, 'Max Level'),
       ),
     ),
@@ -44,24 +46,31 @@ function dungeonsTab(app: App, ch: Character) {
   const card = (d: typeof DUNGEONS[number]) => {
     const unlocked = isUnlocked(ch, d.id);
     const cleared = ch.cleared[d.id] ?? -1;
-    const mr = maxRank(ch, d.id);
-    const sel = Math.min(rankSel[d.id] ?? mr, mr);
+    const lock = difficultyLock(ch);
+    const sel = rankUnlocked(ch, d.id, rankSel[d.id] ?? lock) ? rankSel[d.id] ?? lock : lock;
+    const df = difficulty(sel);
     const prereq = d.unlock ? DUNGEONS.find(x => x.id === d.unlock)!.name : '';
     return h('div', { class: `dcard ${unlocked ? '' : 'locked'} ${d.kind}`, style: { background: `linear-gradient(135deg, ${d.colors[0]}, ${d.colors[1]})` } },
       h('div', { class: 'dc-top' },
         h('span', { class: 'dc-icon' }, unlocked ? d.icon : '🔒'),
         h('div', { class: 'dc-title' }, h('b', null, d.name), h('span', { class: 'muted small' }, `Level ${d.lvl}${d.kind === 'raid' ? ` · ${d.acts.length} wings` : ''}`)),
-        cleared >= 0 ? h('span', { class: 'tag good' }, cleared === 0 ? 'Cleared' : `Heroic ${cleared}`) : null,
+        cleared >= 0 ? h('span', { class: 'tag good', style: { color: difficulty(cleared).color } }, cleared === 0 ? 'Cleared' : `${difficulty(cleared).icon} ${difficulty(cleared).name}`) : null,
       ),
       h('div', { class: 'dc-desc' }, d.desc),
       unlocked ? h('div', { class: 'dc-actions' },
-        mr > 0 ? h('div', { class: 'rank-sel' },
-          h('button', { class: 'btn small', onclick: () => { rankSel[d.id] = Math.max(0, sel - 1); app.render(); } }, '−'),
-          h('span', { title: HEROIC_RANKS[sel].desc }, HEROIC_RANKS[sel].name),
-          h('button', { class: 'btn small', onclick: () => { rankSel[d.id] = Math.min(mr, sel + 1); app.render(); } }, '+')) : null,
-        h('button', { class: 'btn primary', onclick: () => startRun(app, ch, d.id, sel) }, d.kind === 'raid' ? 'Enter Raid' : 'Enter Dungeon'),
+        h('div', { class: 'diff-sel' }, DIFFICULTIES.map((x, i) => {
+          const ok = rankUnlocked(ch, d.id, i);
+          const below = i < lock;
+          const why = below ? `${ch.name} is locked to ${difficulty(lock).name} or harder.` : i === 1 ? `Clear ${d.name} on Normal to unlock Heroic.` : `Clear ${d.name} on Heroic to unlock ${x.name}.`;
+          return h('button', {
+            class: `diff ${sel === i ? 'on' : ''} ${ok ? '' : 'locked'} ${below ? 'closed' : ''}`, style: { '--dc': x.color },
+            title: ok ? x.blurb : why,
+            onclick: () => { if (!ok) { toast(why, 'bad'); return; } rankSel[d.id] = i; app.render(); },
+          }, ok ? x.icon : below ? '⛔' : '🔒', h('small', null, x.name));
+        })),
+        h('button', { class: `btn ${df.permadeath ? 'danger' : 'primary'}`, onclick: () => startRun(app, ch, d.id, sel) }, d.kind === 'raid' ? 'Enter Raid' : 'Enter Dungeon'),
       ) : h('div', { class: 'dc-lock muted small' }, d.kind === 'raid' && d.id === 'ony' ? `Attunement: defeat General Drakkisath in ${prereq}.` : `Clear ${prereq} to unlock.`),
-      unlocked && sel > 0 ? h('div', { class: 'muted small' }, HEROIC_RANKS.slice(1, sel + 1).map(r => r.desc).join(' ')) : null,
+      unlocked && sel > 0 ? h('div', { class: 'diff-blurb small', style: { color: df.color } }, `${df.icon} ${df.name}: enemies have +${Math.round((df.hp - 1) * 100)}% health and deal +${Math.round((df.dmg - 1) * 100)}% damage. ${df.blurb.split('. ').slice(1).join('. ')}`) : null,
     );
   };
   return h('div', null,
@@ -73,9 +82,25 @@ function dungeonsTab(app: App, ch: Character) {
   );
 }
 
-function startRun(app: App, ch: Character, id: string, rank: number) {
+function startRun(app: App, ch: Character, id: string, rank: number, confirmed = false) {
   const p = app.profile;
   if (p.run) { toast('Finish or abandon your current run first.', 'bad'); return; }
+  const df = difficulty(rank);
+  const raises = rank > difficultyLock(ch);
+  if ((raises || df.permadeath) && !confirmed) {
+    const lower = DIFFICULTIES.slice(0, rank).map(x => x.name).join(' or ');
+    const close = modal(h('div', { class: 'hc-confirm' },
+      h('h3', null, `${df.icon} ${raises ? `Lock in ${df.name}?` : df.name}`),
+      df.permadeath ? h('p', null, 'Mythic difficulty with permadeath.') : h('p', null, df.blurb),
+      raises ? h('p', null, h('b', null, `This choice is permanent. Once ${ch.name} enters a ${df.name} run, they can never play ${lower} again, in any dungeon or raid.`)) : null,
+      raises && !df.permadeath ? h('p', { class: 'muted small' }, `${df.name} is open in every dungeon you can enter. Harder difficulties still unlock by clearing each dungeon.`) : null,
+      df.permadeath ? h('p', null, h('b', null, `${raises ? `${ch.name} becomes a Hardcore hero for life. ` : ''}If ${ch.name} falls (or you abandon a run), ${ch.name} is deleted forever: levels, talents, gear and every cleared dungeon.`)) : null,
+      h('button', { class: `btn ${df.permadeath ? 'danger' : 'primary'}`, onclick: () => { close(); startRun(app, ch, id, rank, true); } }, raises ? `Lock in ${df.name} and enter` : `I accept. Enter as ${ch.name}`),
+      h('button', { class: 'btn', onclick: () => close() }, 'Cancel'),
+    ));
+    return;
+  }
+  commitDifficulty(ch, rank);
   p.run = newRun(ch, id, rank, p.nextUid + 10000);
   app.save();
   app.go('run');

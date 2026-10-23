@@ -13,7 +13,15 @@ Every run is a classic dungeon. Pick a path through a branching map, fight with 
 - **Gear**: 10 slots, stats (Stamina, Strength, Agility, Intellect, Spirit, Armor, Attack/Spell Power, Crit), named Classic loot with play-style-altering effects (Thunderfury, Sulfuras, Hand of Justice, Ironfoe...), random "of the Bear/Eagle/Owl..." greens, and Tier 1/Tier 2 sets with 2- and 4-piece bonuses. **Equipped gear is drawn on your character.**
 - **9 dungeons**: Ragefire Chasm, The Deadmines, Wailing Caverns, Shadowfang Keep, Scarlet Monastery, Zul'Farrak, Blackrock Depths, Stratholme, Upper Blackrock Spire.
 - **3 raids** with multi-phase bosses: Onyxia (Deep Breath, whelps, fear), Molten Core (Garr, Majordomo, Ragnaros' submerge), Blackwing Lair (Razorgore's eggs, Vaelastrasz's Burning Adrenaline, Chromaggus' afflictions, Nefarian's class calls).
-- **Progression & replayability**: persistent heroes with XP/levels, talent points, a kept-loot armory (keep 1 item per dungeon win, 2 per raid), dungeon unlock chain + raid attunement, and Heroic I–V difficulty ranks per dungeon.
+- **Progression & replayability**: persistent heroes with XP/levels, talent points, a kept-loot armory (keep 1 item per dungeon win, 2 per raid), dungeon unlock chain + raid attunement.
+- **Four difficulties per dungeon and raid**:
+  - ⚔️ **Normal**: the standard experience.
+  - 🛡️ **Heroic**: unlocks after a Normal clear. Enemies have +45% health and deal +27% damage. Drops more rare loot and **Dungeon Set 1** pieces, and you keep 1 extra item.
+  - 🔥 **Mythic**: unlocks after a Heroic clear. Enemies have +64% health and deal +38% damage. Drops rare and epic loot and **Dungeon Set 1 and 2** pieces.
+  - ☠️ **Hardcore**: Mythic with permadeath. A fallen hero is erased and remembered in the Hall of the Fallen.
+  - **Raising difficulty is permanent.** Once a hero enters a harder run, they can never play an easier difficulty again. Their locked difficulty is open in every dungeon they can enter.
+  - Each class has two dungeon sets (Valor/Heroism, Lightforge/Soulforge, Magister's/Sorcerer's...). Their 2- and 4-piece bonuses are weaker than the Molten Core and Blackwing Lair raid sets.
+  - Tuning: heroes who progressed through Normal win about 20% on Heroic and 10% on Mythic (`DIFFTUNE=1 npx vitest run tests/difftune.test.ts`).
 - Random events (Spirit Healer, Goblin gambler, a certain reckless paladin...), Goblin vendors, campfires and treasure.
 - **Sound, music and animation, all generated in code (no audio or sprite files)**:
   - Synthesized sound effects, with a different sound for each spell school.

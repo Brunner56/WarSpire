@@ -63,8 +63,10 @@ export const FX: Record<string, FxDef> = {
 };
 
 // ---------- Tier sets (play-style changing set bonuses) ----------
-export interface SetDef { id: string; name: string; cls: ClassId; tier: 1 | 2; bonuses: { n: number; fx: FxDef }[]; look: ItemLook }
-const S = (id: string, name: string, cls: ClassId, tier: 1 | 2, look: ItemLook, b2: FxDef, b4: FxDef): SetDef => ({ id, name, cls, tier, look, bonuses: [{ n: 2, fx: b2 }, { n: 4, fx: b4 }] });
+/** Raid sets (Tier 1/2) drop in raids; dungeon sets (Dungeon Set 1/2) drop on Heroic and Mythic dungeons and are weaker. */
+export interface SetDef { id: string; name: string; cls: ClassId; kind: 'raid' | 'dungeon'; tier: 1 | 2; bonuses: { n: number; fx: FxDef }[]; look: ItemLook }
+const S = (id: string, name: string, cls: ClassId, tier: 1 | 2, look: ItemLook, b2: FxDef, b4: FxDef): SetDef => ({ id, name, cls, kind: 'raid', tier, look, bonuses: [{ n: 2, fx: b2 }, { n: 4, fx: b4 }] });
+const D = (id: string, name: string, cls: ClassId, tier: 1 | 2, look: ItemLook, b2: FxDef, b4: FxDef): SetDef => ({ ...S(id, name, cls, tier, look, b2, b4), kind: 'dungeon' });
 
 export const SETS: SetDef[] = [
   S('might', 'Battlegear of Might', 'warrior', 1, { c1: '#8b2c1a', c2: '#d4a017', style: 'spiked' },
@@ -121,6 +123,63 @@ export const SETS: SetDef[] = [
   S('stormrage', 'Stormrage Raiment', 'druid', 2, { c1: '#2f4f2f', c2: '#9370db', style: 'leafy' },
     { desc: 'Regeneration you gain +3.', hooks: { applyMod: (_c, _n, s, amt, t) => (t.isPlayer && s === 'regen' ? amt + 3 : amt) } },
     { desc: 'All damage +3 and attacks grant 1 Block.', hooks: all(P.dmgAll(3), { onCardPlayed: (c, _n, def) => { if (def.type === 'attack') c.gainBlock(1, undefined, true); } }) }),
+
+  // ---------- Dungeon Set 1 (Heroic and Mythic) ----------
+  D('valor', 'Battlegear of Valor', 'warrior', 1, { c1: '#6a6a72', c2: '#b08a3a', style: 'spiked' },
+    { desc: 'Start each combat with 5 Block.', hooks: P.startBlock(5) },
+    { desc: 'Attacks deal +2 damage.', hooks: P.dmgAttack(2) }),
+  D('lightforge', 'Lightforge Armor', 'paladin', 1, { c1: '#b8b8c8', c2: '#d4a017', style: 'winged' },
+    { desc: 'Healing increased by 10%.', hooks: P.healPct(10) },
+    { desc: 'Judgement deals +4 damage.', hooks: P.dmgCards(['p_judgement', 'judgement'], 4) }),
+  D('beaststalker', 'Beaststalker Armor', 'hunter', 1, { c1: '#5a6a3a', c2: '#8a5a2a', style: 'scaled' },
+    { desc: 'Your pet deals +2 damage.', hooks: P.pet(2) },
+    { desc: '+5% critical strike chance.', hooks: P.crit(() => true, 5) }),
+  D('shadowcraft', 'Shadowcraft Armor', 'rogue', 1, { c1: '#2a2a32', c2: '#5a4a6a', style: 'hooded' },
+    { desc: 'Start each combat with 1 Combo Point.', hooks: { onCombatStart: c => c.gainCp(1) } },
+    { desc: '+5% critical strike chance.', hooks: P.crit(() => true, 5) }),
+  D('devout', 'Devout Vestments', 'priest', 1, { c1: '#e8e0d0', c2: '#4a7ab0', style: 'robe' },
+    { desc: 'Start each combat with 5 Shield.', hooks: P.start('absorb', 5) },
+    { desc: 'Healing increased by 10%.', hooks: P.healPct(10) }),
+  D('elements', 'The Elements', 'shaman', 1, { c1: '#3a6a5a', c2: '#b0803a', style: 'totemic' },
+    { desc: 'Nature damage +2.', hooks: P.dmgSchool(['nature'], 2) },
+    { desc: 'Start each combat with Searing Totem placed.', hooks: { onCombatStart: c => { c.p.totems.fire = c.p.totems.fire ?? 'searing'; } } }),
+  D('magister', "Magister's Regalia", 'mage', 1, { c1: '#3a4a8a', c2: '#c0c0e0', style: 'robe' },
+    { desc: 'Fire, Frost and Arcane damage +1.', hooks: P.dmgSchool(['fire', 'frost', 'arcane'], 1) },
+    { desc: 'Start each combat with 1 Clearcasting.', hooks: P.start('clearcast', 1) }),
+  D('dreadmist', 'Dreadmist Raiment', 'warlock', 1, { c1: '#2a1a3a', c2: '#8a6ab0', style: 'robe' },
+    { desc: 'Shadow damage +2.', hooks: P.dmgSchool(['shadow'], 2) },
+    { desc: 'Your demons deal +2 damage.', hooks: P.pet(2) }),
+  D('wildheart', 'Wildheart Raiment', 'druid', 1, { c1: '#4a3a2a', c2: '#6ab04a', style: 'leafy' },
+    { desc: 'Start each combat with 2 Thorns.', hooks: P.start('thorns', 2) },
+    { desc: 'Regeneration you gain +1.', hooks: { applyMod: (_c, _n, s, amt, t) => (t.isPlayer && s === 'regen' ? amt + 1 : amt) } }),
+  // ---------- Dungeon Set 2 (Mythic) ----------
+  D('heroism', 'Battlegear of Heroism', 'warrior', 2, { c1: '#3a3a4a', c2: '#c8a040', style: 'spiked' },
+    { desc: 'Start each combat with 6 Block.', hooks: P.startBlock(6) },
+    { desc: 'Attacks deal +2 damage and heal you for 1.', hooks: all(P.dmgAttack(2), { onCardPlayed: (c, _n, def) => { if (def.type === 'attack') c.heal(1); } }) }),
+  D('soulforge', 'Soulforge Armor', 'paladin', 2, { c1: '#d8d0b0', c2: '#3a6ab0', style: 'winged' },
+    { desc: 'Holy damage +2.', hooks: P.dmgSchool(['holy'], 2) },
+    { desc: 'Judgement heals you for 4.', hooks: { onCardPlayed: (c, _n, def) => { if (def.id === 'p_judgement') c.heal(4); } } }),
+  D('beastmaster', 'Beastmaster Armor', 'hunter', 2, { c1: '#4a5a2a', c2: '#c09040', style: 'scaled' },
+    { desc: 'Your pet deals +3 damage.', hooks: P.pet(3) },
+    { desc: "Start each combat with 2 Hunter's Mark on all enemies.", hooks: P.startAll('mark', 2) }),
+  D('darkmantle', 'Darkmantle Armor', 'rogue', 2, { c1: '#1a1a22', c2: '#8a2a3a', style: 'hooded' },
+    { desc: 'Start each combat with 2 Combo Points.', hooks: { onCombatStart: c => c.gainCp(2) } },
+    { desc: 'Finishers deal 15% more damage.', hooks: { outDmg: (_c, _n, d) => { if (d.src === 'card' && d.card?.kw?.includes('finisher')) d.amt *= 1.15; } } }),
+  D('virtuous', 'Virtuous Vestments', 'priest', 2, { c1: '#f0ece0', c2: '#c0a040', style: 'robe' },
+    { desc: 'Start each combat with 8 Shield.', hooks: P.start('absorb', 8) },
+    { desc: 'Healing increased by 15%.', hooks: P.healPct(15) }),
+  D('fivethunders', 'The Five Thunders', 'shaman', 2, { c1: '#2a4a7a', c2: '#e0c050', style: 'totemic' },
+    { desc: 'Nature damage +3.', hooks: P.dmgSchool(['nature'], 3) },
+    { desc: 'Start each combat with 3 Lightning Shield.', hooks: P.start('lightningShield', 3) }),
+  D('sorcerer', "Sorcerer's Regalia", 'mage', 2, { c1: '#2a2a6a', c2: '#e0a0ff', style: 'robe' },
+    { desc: 'Fire, Frost and Arcane damage +2.', hooks: P.dmgSchool(['fire', 'frost', 'arcane'], 2) },
+    { desc: 'Draw 1 extra card on your first turn.', hooks: P.drawFirst(1) }),
+  D('deathmist', 'Deathmist Raiment', 'warlock', 2, { c1: '#1a0a2a', c2: '#b04aff', style: 'robe' },
+    { desc: 'Shadow and Fire damage +2.', hooks: P.dmgSchool(['shadow', 'fire'], 2) },
+    { desc: 'Start each combat with 1 Soul Shard.', hooks: { onCombatStart: c => c.gainShards(1) } }),
+  D('feralheart', 'Feralheart Raiment', 'druid', 2, { c1: '#3a2a1a', c2: '#a0c040', style: 'leafy' },
+    { desc: 'Start each combat with 3 Thorns.', hooks: P.start('thorns', 3) },
+    { desc: 'All damage +2.', hooks: P.dmgAll(2) }),
 ];
 export const SET_BY_ID = Object.fromEntries(SETS.map(s => [s.id, s])) as Record<string, SetDef>;
 
@@ -308,14 +367,17 @@ const SET_CLASS_PRIM: Record<ClassId, StatKey[]> = {
   priest: ['int', 'spi', 'sta'], shaman: ['int', 'str', 'sta'], mage: ['int', 'sta'], warlock: ['int', 'sta'], druid: ['int', 'agi', 'sta'],
 };
 
-export function setPieces(setId: string): ItemTpl[] {
+/** Set piece templates. Dungeon set pieces take the stat tier of the dungeon that drops them. */
+export function setPieces(setId: string, itemTier?: number): ItemTpl[] {
   const s = SET_BY_ID[setId];
+  const q: Quality = s.kind === 'raid' || s.tier === 2 ? 'epic' : 'rare';
+  const tier = s.kind === 'raid' ? (s.tier === 1 ? 11 : 12) : itemTier ?? 6;
   const armorWord = SET_CLASS_ARMOR[s.cls] === 'cloth' ? 2 : SET_CLASS_ARMOR[s.cls] === 'plate' ? 0 : 1;
   const prefix = s.name.split(' of ').pop()!.replace(/^The /, '').replace(' Armor', '').replace(' Raiment', '').replace(' Regalia', '').replace(' Vestments', '');
   return SET_SLOTS.map(slot => {
     const names = SET_PIECE_NAMES[slot];
     const word = names[Math.min(names.length - 1, armorWord + (slot === 'head' && SET_CLASS_ARMOR[s.cls] === 'cloth' ? 1 : 0))];
-    return I(`${setId}_${slot}`, `${prefix} ${word}`, slot, 'epic', s.tier === 1 ? 11 : 12, SET_CLASS_PRIM[s.cls], {
+    return I(`${setId}_${slot}`, `${prefix} ${word}`, slot, q, tier, SET_CLASS_PRIM[s.cls], {
       armor: SET_CLASS_ARMOR[s.cls], set: setId, cls: [s.cls], look: { ...s.look },
     });
   });

@@ -14,7 +14,7 @@ function equipBest(ch: Character) {
   }
 }
 
-export function campaign(cls: ClassId, spec: string, seed: number, maxTries = 6) {
+export function campaign(cls: ClassId, spec: string, seed: number, maxTries = 6, onClear?: (dungeonId: string, ch: Character) => void) {
   const ch = makeChar(cls, CLASS_RACE[cls], spec, 1);
   const log: string[] = [];
   let s = seed;
@@ -33,6 +33,7 @@ export function campaign(cls: ClassId, spec: string, seed: number, maxTries = 6)
       if (!ok) deaths[result.diedTo ?? '?'] = (deaths[result.diedTo ?? '?'] ?? 0) + 1;
       if (!ok && t === maxTries - 1) log.push(`${d.id}: FAILED x${maxTries} (lvl ${ch.level}, act ${result.act + 1})`);
       if (ok) log.push(`${d.id}: won try ${t + 1} lvl ${ch.level}`);
+      if (ok) { autoTalents(ch); equipBest(ch); onClear?.(d.id, ch); }
     }
     if (!ok) break;
   }

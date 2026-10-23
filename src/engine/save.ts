@@ -17,12 +17,27 @@ export interface Profile {
   run: RunState | null;
   nextUid: number;
   settings: Settings;
+  /** Hardcore heroes who died (memorial). */
+  fallen?: FallenHero[];
+  /** Save-format revision for migrations. */
+  rev?: number;
 }
+
+export interface FallenHero { name: string; race: RaceId; cls: ClassId; level: number; dungeon: string; at: number }
 
 const KEY = 'warspire.profile.v1';
 
 export function newProfile(): Profile {
-  return { v: 1, characters: [], activeId: null, run: null, nextUid: 1, settings: { fast: false, sound: true, wowArt: true, musicVol: 0.6, sfxVol: 0.8, motion: true } };
+  return { v: 1, rev: 2, characters: [], activeId: null, run: null, nextUid: 1, settings: { fast: false, sound: true, wowArt: true, musicVol: 0.6, sfxVol: 0.8, motion: true } };
+}
+
+/** rev 2: Heroic I–V ranks became Normal/Heroic/Mythic/Hardcore; old Heroic clears count as Normal clears. */
+function migrate(p: Profile) {
+  if ((p.rev ?? 1) < 2) {
+    for (const ch of p.characters) for (const k of Object.keys(ch.cleared)) ch.cleared[k] = Math.min(ch.cleared[k], 0);
+    if (p.run && p.run.rank > 0) p.run.rank = 1;
+  }
+  p.rev = 2;
 }
 
 export function loadProfile(): Profile {
@@ -32,6 +47,7 @@ export function loadProfile(): Profile {
     const p = JSON.parse(raw) as Profile;
     if (p.v !== 1) return newProfile();
     p.settings = { ...newProfile().settings, ...(p.settings ?? {}) };
+    migrate(p);
     return p;
   } catch {
     return newProfile();

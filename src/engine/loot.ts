@@ -42,9 +42,9 @@ export class UidGen { constructor(public n: number) {} next() { return ++this.n;
 export function namedLoot(rng: Rng, cls: ClassId, dungeonId: string, uid: UidGen, opts: { minQ?: Quality; count?: number; includeSets?: boolean } = {}): Item[] {
   let pool = (NAMED[dungeonId] ?? []).filter(t => tplUsable(cls, t) && tplUseful(cls, t));
   if (opts.includeSets) {
-    if (dungeonId === 'mc') pool = pool.concat(setPieces(SETS.find(s => s.cls === cls && s.tier === 1)!.id));
-    if (dungeonId === 'bwl') pool = pool.concat(setPieces(SETS.find(s => s.cls === cls && s.tier === 2)!.id).filter(t => t.slot !== 'head'));
-    if (dungeonId === 'ony') pool = pool.concat(setPieces(SETS.find(s => s.cls === cls && s.tier === 2)!.id).filter(t => t.slot === 'head'));
+    if (dungeonId === 'mc') pool = pool.concat(setPieces(SETS.find(s => s.kind === 'raid' && s.cls === cls && s.tier === 1)!.id));
+    if (dungeonId === 'bwl') pool = pool.concat(setPieces(SETS.find(s => s.kind === 'raid' && s.cls === cls && s.tier === 2)!.id).filter(t => t.slot !== 'head'));
+    if (dungeonId === 'ony') pool = pool.concat(setPieces(SETS.find(s => s.kind === 'raid' && s.cls === cls && s.tier === 2)!.id).filter(t => t.slot === 'head'));
   }
   if (opts.minQ) {
     const order: Quality[] = ['poor', 'common', 'uncommon', 'rare', 'epic', 'legendary'];
@@ -90,6 +90,12 @@ export function randomItem(rng: Rng, cls: ClassId, tier: number, q: Quality, uid
   const it = makeItem(tpl, uid.next());
   it.id = `rnd_${it.uid}`;
   return it;
+}
+
+/** A random piece of this class's dungeon set (1 or 2), with stats for the dungeon's tier. */
+export function dungeonSetPiece(rng: Rng, cls: ClassId, which: 1 | 2, tier: number, uid: UidGen): Item {
+  const set = SETS.find(s => s.kind === 'dungeon' && s.cls === cls && s.tier === which)!;
+  return makeItem(rng.pick(setPieces(set.id, tier)), uid.next());
 }
 
 export function rollQuality(rng: Rng, tier: number, boost: number, raid: boolean): Quality {
