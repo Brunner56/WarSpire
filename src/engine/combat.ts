@@ -98,7 +98,7 @@ export class Combat {
     for (const id of s.enemies) this.spawn(id);
     const deck = s.deck.map(c => ({ ...c }));
     this.rng.shuffle(deck);
-    const innate = deck.filter(c => (getCard(c.id).kw ?? []).includes('innate'));
+    const innate = deck.filter(c => { const kw = getCard(c.id).kw ?? []; return kw.includes('innate') || kw.includes('opener'); });
     this.draw = [...deck.filter(c => !innate.includes(c)), ...innate]; // draw from end
   }
 
@@ -690,6 +690,7 @@ export class Combat {
     if (c < 0) return c;
     this.each(x => { c += x.h.costMod?.(this, x.n, def) ?? 0; });
     if (def.type === 'attack' && this.p.st.rapid) c -= 1;
+    if (def.kw?.includes('opener') && !this.p.st.stealth) c += 1;
     if (this.p.st.clearcast && this.isSpell(def)) c = 0;
     return Math.max(0, c);
   }
@@ -701,8 +702,6 @@ export class Combat {
     if (kw.includes('unplayable') || def.cost < 0) return { ok: false, why: 'Unplayable' };
     const cost = this.costOf(ci);
     if (cost > this.p.res) return { ok: false, why: `Not enough ${this.p.resName}` };
-    if (def.form && this.p.form !== def.form) return { ok: false, why: `Requires ${def.form[0].toUpperCase() + def.form.slice(1)} Form` };
-    if (kw.includes('opener') && !this.p.st.stealth) return { ok: false, why: 'Requires Stealth' };
     if (def.shards && this.p.shards < def.shards) return { ok: false, why: 'Needs Soul Shard' };
     if (kw.includes('finisher') && this.p.cp <= 0) return { ok: false, why: 'Needs Combo Points' };
     if (cardActions(def, ci.up).some(a => a.k === 'judge') && !this.p.seal) return { ok: false, why: 'No active Seal' };
@@ -746,6 +745,8 @@ export class Combat {
       this.p.form = 'caster';
       this.ev({ t: 'text', uid: this.p.uid, text: 'Caster Form' });
     }
+    // form abilities shift you into their form
+    if (def.form && this.p.form !== def.form) this.setForm(def.form);
     const ctx = this.mkCtx(ci, def, target);
     const dealsDamage = cardActions(def, ci.up).some(a => a.k === 'dmg');
     for (const a of cardActions(def, ci.up)) {

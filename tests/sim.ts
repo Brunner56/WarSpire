@@ -6,7 +6,7 @@ import type { Character } from '../src/engine/character';
 import { newProfile, createCharacter } from '../src/engine/save';
 import {
   RunState, newRun, enterNode, reachable, makeCombat, resolveCombat, takeRewardCard, takeRewardItem, takeRewardPotion, finishReward,
-  restHeal, upgradeCard, chooseEvent, eventFollowUp, nextAct, removeCard, duplicateCard, leaveNode, finishRun, itemScore, gearList, keepCandidates,
+  restHeal, upgradeCard, maxHpOf, chooseEvent, eventFollowUp, nextAct, removeCard, duplicateCard, leaveNode, finishRun, itemScore, gearList, keepCandidates,
 } from '../src/engine/run';
 import { canEquip } from '../src/engine/loot';
 import { Rng } from '../src/engine/rng';
@@ -19,11 +19,13 @@ export function botCombat(c: Combat, rng: Rng, maxTurns = 80) {
   c.start();
   let turns = 0;
   while (!c.over && turns < maxTurns) {
+    botPotions(c);
     let guard = 0;
     while (!c.over && guard++ < 40) {
       const playable = c.hand.map((ci, i) => ({ ci, i })).filter(x => c.canPlay(x.ci).ok);
       if (!playable.length) break;
       const incoming = c.alive().reduce((s, e) => s + (e.move ? e.move.acts.filter(a => a.k === 'atk').reduce((t, a: any) => t + c.enemyHitDamage(e, a.n) * (a.hits ?? 1), 0) : 0), 0);
+      const formCards = (f: string) => c.hand.filter(ci => getCard(ci.id).form === f).length;
       const scored = playable.map(x => {
         const def = getCard(x.ci.id);
         const acts = cardActions(def, x.ci.up);
@@ -31,7 +33,17 @@ export function botCombat(c: Combat, rng: Rng, maxTurns = 80) {
         if (def.type === 'aura') s += 8;
         if (acts.some(a => a.k === 'block' || a.k === 'absorb')) s += incoming > c.p.block ? 6 : -2;
         if (acts.some(a => a.k === 'dmg')) s += 5;
-        if (acts.some(a => a.k === 'form' || a.k === 'seal' || a.k === 'totem' || a.k === 'pet')) s += 7;
+        if (acts.some(a => a.k === 'apply' && ['bleed', 'poison', 'burn', 'affliction', 'siphon', 'doom'].includes((a as any).s))) s += 5;
+        if (acts.some(a => a.k === 'apply' && ['weak', 'vuln', 'stun', 'poly', 'chill', 'mark', 'firevuln'].includes((a as any).s))) s += 2;
+        if (def.kw?.includes('opener') && c.p.st.stealth) s += 6;
+        if (acts.some(a => a.k === 'seal' || a.k === 'totem' || a.k === 'pet')) s += 7;
+        for (const a of acts) {
+          if (a.k === 'seal' && c.p.seal === a.id) s -= 12;
+          if (a.k === 'totem' && Object.values(c.p.totems).includes(a.id)) s -= 12;
+          if (a.k === 'form') s += a.id === c.p.form ? -20 : 1 + 4 * formCards(a.id);
+        }
+        // spells knock you out of Cat/Bear Form: avoid them while holding form cards
+        if (def.kw?.includes('caster') && (c.p.form === 'cat' || c.p.form === 'bear')) s -= 4 * formCards(c.p.form);
         if (acts.some(a => a.k === 'heal')) s += c.p.hp < c.p.maxHp * 0.6 ? 5 : -3;
         if (def.kw?.includes('finisher')) s += c.p.cp >= 4 ? 8 : -5;
         s += rng.next();
@@ -46,6 +58,17 @@ export function botCombat(c: Combat, rng: Rng, maxTurns = 80) {
     turns++;
   }
   if (!c.over) { c.p.hp = 0; c.over = 'lose'; }
+}
+
+const DEFENSIVE = new Set(['po_heal', 'po_stone', 'po_fire', 'po_lip', 'po_free']);
+/** Drink defensive potions when low, offensive ones at the start of boss fights. */
+function botPotions(c: Combat) {
+  const low = c.p.hp < c.p.maxHp * 0.4;
+  const boss = c.turn === 1 && c.alive().some(e => e.def.boss);
+  c.potions.forEach((id, i) => {
+    if (!id || c.over) return;
+    if (DEFENSIVE.has(id) ? low : boss) c.usePotion(i, c.alive().sort((a, b) => b.hp - a.hp)[0]?.uid);
+  });
 }
 
 export function autoTalents(ch: Character) {
@@ -96,7 +119,7 @@ export function simRun(ch: Character, dungeonId: string, seed: number, rank = 0)
       }
       case 'rest': {
         const up = run.deck.find(c => !c.up && getCard(c.id).cls === ch.cls);
-        if (run.hp < 0.65 * 80 || !up) restHeal(run, ch); else upgradeCard(run, up.uid);
+        if (run.hp < 0.65 * maxHpOf(run, ch) || !up) restHeal(run, ch); else upgradeCard(run, up.uid);
         leaveNode(run);
         break;
       }

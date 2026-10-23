@@ -31,6 +31,15 @@ Optional balance report (a bot plays the whole campaign for every spec):
 CAMPAIGN=1 TREES=3 npx vitest run tests/campaign.test.ts
 ```
 
+Difficulty report. A bot plays every spec in every dungeon on Normal, starting at the dungeon's minimum level with auto-assigned talents. Half the runs use starter gear and half use green gear from the previous tier. The game is tuned so this lands near 50% for dungeons and about 42% for raids.
+
+```bash
+DIFF=1 SEEDS=12 npx vitest run tests/difficulty.test.ts
+# GEAR=none|low|mix (default mix), DUNGEONS=rfc,dm, SEED_OFFSET=100 for fresh seeds
+```
+
+`TUNE=1 npx vitest run tests/tune.test.ts` re-fits the per-tier multipliers (`TIER_TUNE` in `src/data/dungeons/index.ts`) after big balance changes.
+
 ## Playing on iOS
 
 ### Option A — Free website with GitHub Pages (no Mac needed)

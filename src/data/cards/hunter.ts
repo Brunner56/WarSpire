@@ -26,9 +26,9 @@ export const HUNTER_CARDS: CardDef[] = [
   H({ id: 'h_volley', name: 'Volley', tree: 'mm', type: 'attack', rarity: 'rare', cost: 2, lvl: 36, a: [aoe(3, { hits: 3 })], u: [aoe(4, { hits: 3 })], icon: '🌧️' }),
   H({ id: 'h_trueshot', name: 'Trueshot Aura', tree: 'mm', type: 'aura', rarity: 'rare', cost: 1, talent: 'h_mm_cap', a: [self('trueshot', 3)], u: [self('trueshot', 4)], icon: '🏹' }),
   // Survival
-  H({ id: 'h_serpent', name: 'Serpent Sting', tree: 'sv', type: 'attack', rarity: 'common', cost: 1, a: [dmg(2), app('poison', 5)], u: [dmg(3), app('poison', 7)], icon: '🐍' }),
-  H({ id: 'h_raptor', name: 'Raptor Strike', tree: 'sv', type: 'attack', rarity: 'common', cost: 1, a: [dmg(7), blk(3)], u: [dmg(10), blk(4)], icon: '🦖' }),
-  H({ id: 'h_wingclip', name: 'Wing Clip', tree: 'sv', type: 'attack', rarity: 'common', cost: 0, a: [dmg(3), app('weak', 1)], u: [dmg(5), app('weak', 2)], icon: '🪶' }),
+  H({ id: 'h_serpent', name: 'Serpent Sting', tree: 'sv', type: 'attack', rarity: 'common', cost: 1, a: [dmg(2), app('poison', 4)], u: [dmg(3), app('poison', 6)], icon: '🐍' }),
+  H({ id: 'h_raptor', name: 'Raptor Strike', tree: 'sv', type: 'attack', rarity: 'common', cost: 1, a: [dmg(6), blk(3)], u: [dmg(9), blk(4)], icon: '🦖' }),
+  H({ id: 'h_wingclip', name: 'Wing Clip', tree: 'sv', type: 'attack', rarity: 'common', cost: 0, a: [dmg(2), app('weak', 1)], u: [dmg(4), app('weak', 2)], icon: '🪶' }),
   H({ id: 'h_freeze_trap', name: 'Freezing Trap', tree: 'sv', type: 'skill', rarity: 'uncommon', cost: 1, lvl: 12, a: [self('trapFreeze', 1), blk(4)], u: [self('trapFreeze', 1), blk(8)], text: 'Set a trap: the next enemy to attack you is Stunned. Gain 4 Block.', icon: '🧊' }),
   H({ id: 'h_immo_trap', name: 'Immolation Trap', tree: 'sv', type: 'skill', rarity: 'common', cost: 1, lvl: 8, a: [self('trapImmo', 8), blk(3)], u: [self('trapImmo', 12), blk(4)], text: 'Set a trap: the next enemy to attack you gains 8 Burning. Gain 3 Block.', icon: '🔥' }),
   H({ id: 'h_explosive', name: 'Explosive Trap', tree: 'sv', type: 'skill', rarity: 'uncommon', cost: 1, school: 'fire', scale: 'ap', lvl: 26, a: [aoe(5, { school: 'fire' }), app('burn', 3, 'all')], u: [aoe(7, { school: 'fire' }), app('burn', 5, 'all')], icon: '💣' }),

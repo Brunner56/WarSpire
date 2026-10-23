@@ -9,8 +9,8 @@ export const SHAMAN_CARDS: CardDef[] = [
   S({ id: 's_guard', name: 'Earthen Guard', type: 'skill', rarity: 'starter', cost: 1, a: [blk(5)], icon: '🪨' }),
   S({ id: 's_searing', name: 'Searing Totem', type: 'skill', rarity: 'starter', cost: 1, uc: 0, a: [totem('searing')], icon: '🔥' }),
   // Elemental
-  S({ id: 's_bolt', name: 'Lightning Bolt', tree: 'ele', type: 'attack', rarity: 'common', cost: 1, school: 'nature', a: [dmg(8)], u: [dmg(11)], icon: '⚡' }),
-  S({ id: 's_earth_shock', name: 'Earth Shock', tree: 'ele', type: 'attack', rarity: 'common', cost: 1, school: 'nature', a: [dmg(5), app('weak', 1)], u: [dmg(8), app('weak', 1)], icon: '🌍' }),
+  S({ id: 's_bolt', name: 'Lightning Bolt', tree: 'ele', type: 'attack', rarity: 'common', cost: 1, school: 'nature', a: [dmg(9)], u: [dmg(12)], icon: '⚡' }),
+  S({ id: 's_earth_shock', name: 'Earth Shock', tree: 'ele', type: 'attack', rarity: 'common', cost: 1, school: 'nature', a: [dmg(6), app('weak', 1)], u: [dmg(9), app('weak', 1)], icon: '🌍' }),
   S({ id: 's_flame_shock', name: 'Flame Shock', tree: 'ele', type: 'attack', rarity: 'common', cost: 1, school: 'fire', a: [dmg(4), app('burn', 5)], u: [dmg(6), app('burn', 7)], icon: '🔥' }),
   S({ id: 's_frost_shock', name: 'Frost Shock', tree: 'ele', type: 'attack', rarity: 'common', cost: 1, school: 'frost', a: [dmg(5), app('chill', 2)], u: [dmg(7), app('chill', 3)], lvl: 6, icon: '❄️' }),
   S({ id: 's_chain', name: 'Chain Lightning', tree: 'ele', type: 'attack', rarity: 'uncommon', cost: 2, school: 'nature', lvl: 20, tgt: true,
@@ -31,9 +31,9 @@ export const SHAMAN_CARDS: CardDef[] = [
   S({ id: 's_em', name: 'Elemental Mastery', tree: 'ele', type: 'skill', rarity: 'rare', cost: 0, talent: 's_ele_cap', a: [self('critnext', 2), self('clearcast', 1)], u: [self('critnext', 3), self('clearcast', 2)], kw: ['cooldown'], icon: '🌀' }),
   S({ id: 's_storm', name: 'Thunderstorm', tree: 'ele', type: 'attack', rarity: 'rare', cost: 2, school: 'nature', lvl: 38, a: [aoe(9), app('weak', 1, 'all')], u: [aoe(13), app('weak', 2, 'all')], icon: '⛈️' }),
   // Enhancement
-  S({ id: 's_lshield', name: 'Lightning Shield', tree: 'enh', type: 'aura', rarity: 'common', cost: 1, a: [self('lightningShield', 3)], u: [self('lightningShield', 5)], icon: '⚡' }),
-  S({ id: 's_flametongue', name: 'Flametongue Weapon', tree: 'enh', type: 'aura', rarity: 'common', cost: 1, a: [self('flametongue', 2)], u: [self('flametongue', 3)], lvl: 4, icon: '🗡️' }),
-  S({ id: 's_rockbiter', name: 'Rockbiter Weapon', tree: 'enh', type: 'aura', rarity: 'common', cost: 1, a: [self('str', 2)], u: [self('str', 3)], icon: '🪨' }),
+  S({ id: 's_lshield', name: 'Lightning Shield', tree: 'enh', type: 'aura', rarity: 'common', cost: 1, a: [self('lightningShield', 4)], u: [self('lightningShield', 6)], icon: '⚡' }),
+  S({ id: 's_flametongue', name: 'Flametongue Weapon', tree: 'enh', type: 'aura', rarity: 'common', cost: 1, a: [self('flametongue', 3)], u: [self('flametongue', 4)], lvl: 4, icon: '🗡️' }),
+  S({ id: 's_rockbiter', name: 'Rockbiter Weapon', tree: 'enh', type: 'aura', rarity: 'common', cost: 1, a: [self('str', 3)], u: [self('str', 4)], icon: '🪨' }),
   S({ id: 's_strength', name: 'Strength of Earth Totem', tree: 'enh', type: 'skill', rarity: 'common', cost: 1, uc: 0, a: [totem('strength')], lvl: 8, icon: '🗿' }),
   S({ id: 's_windfury', name: 'Windfury Totem', tree: 'enh', type: 'skill', rarity: 'uncommon', cost: 1, uc: 0, a: [totem('windfury')], lvl: 18, icon: '🌪️' }),
   S({ id: 's_stormstrike', name: 'Stormstrike', tree: 'enh', type: 'attack', rarity: 'rare', cost: 1, talent: 's_enh_cap', a: [dmg(5, { hits: 2 }), app('vuln', 2)], u: [dmg(7, { hits: 2 }), app('vuln', 2)], icon: '⛈️' }),

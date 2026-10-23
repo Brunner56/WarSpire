@@ -48,8 +48,8 @@ export const PALADIN_CARDS: CardDef[] = [
   // Retribution
   P({ id: 'p_seal_crusader', name: 'Seal of the Crusader', tree: 'ret', type: 'skill', rarity: 'common', cost: 0, a: [seal('crusader')], u: [seal('crusader'), draw(1)], icon: '🔴' }),
   P({ id: 'p_seal_command', name: 'Seal of Command', tree: 'ret', type: 'skill', rarity: 'uncommon', cost: 0, a: [seal('command')], u: [seal('command'), draw(1)], lvl: 16, icon: '🟣' }),
-  P({ id: 'p_might', name: 'Blessing of Might', tree: 'ret', type: 'aura', rarity: 'common', cost: 1, a: [self('str', 2)], u: [self('str', 3)], icon: '💪' }),
-  P({ id: 'p_ret_aura', name: 'Retribution Aura', tree: 'ret', type: 'aura', rarity: 'common', cost: 1, a: [self('retribution', 3)], u: [self('retribution', 5)], lvl: 8, icon: '☀️' }),
+  P({ id: 'p_might', name: 'Blessing of Might', tree: 'ret', type: 'aura', rarity: 'common', cost: 1, a: [self('str', 3)], u: [self('str', 4)], icon: '💪' }),
+  P({ id: 'p_ret_aura', name: 'Retribution Aura', tree: 'ret', type: 'aura', rarity: 'common', cost: 1, a: [self('retribution', 4)], u: [self('retribution', 6)], lvl: 8, icon: '☀️' }),
   P({ id: 'p_hammer_wrath', name: 'Hammer of Wrath', tree: 'ret', type: 'attack', rarity: 'uncommon', cost: 1, school: 'holy', lvl: 26, tgt: true,
     text: 'Deal 7 Holy damage. Triple damage if the target is below 30% HP.',
     a: [fn('how', (c, ctx, up) => {

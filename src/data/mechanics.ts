@@ -49,8 +49,8 @@ export const SEALS: Record<string, SealDef> = {
 export interface TotemDef { name: string; element: 'earth' | 'fire' | 'water' | 'air'; icon: string; desc: string; hooks: HookSet; onPlace?: (c: Combat) => void }
 
 export const TOTEMS: Record<string, TotemDef> = {
-  searing: { name: 'Searing Totem', element: 'fire', icon: '🔥', desc: 'End of turn: deal 4 Fire damage to a random enemy.',
-    hooks: { onTurnEnd: c => { const t = c.randomEnemy(); if (t) c.effectDamage(t, 4 + Math.floor(c.sp / 2), 'fire', 'effect'); } } },
+  searing: { name: 'Searing Totem', element: 'fire', icon: '🔥', desc: 'End of turn: deal 5 Fire damage to a random enemy.',
+    hooks: { onTurnEnd: c => { const t = c.randomEnemy(); if (t) c.effectDamage(t, 5 + Math.floor(c.sp / 2), 'fire', 'effect'); } } },
   magma: { name: 'Magma Totem', element: 'fire', icon: '🌋', desc: 'End of turn: deal 2 Fire damage to ALL enemies.',
     hooks: { onTurnEnd: c => { for (const e of c.alive()) c.effectDamage(e, 2 + Math.floor(c.sp / 3), 'fire', 'effect'); } } },
   firenova: { name: 'Fire Nova Totem', element: 'fire', icon: '💥', desc: 'End of turn: apply 2 Burning to ALL enemies.',
@@ -104,7 +104,7 @@ export const PETS: Record<string, PetDef> = {
   boar: { name: 'Boar', dmg: 2, icon: '🐗', desc: 'Gores for 2 and grants you 3 Block.', onAttack: c => c.gainBlock(3, undefined, true) },
   raptor: { name: 'Raptor', dmg: 2, icon: '🦖', desc: 'Rends for 2 and applies 2 Bleed.', onAttack: (c, t) => { if (!t.dead) c.applyStatus(t, 'bleed', 2, true); } },
   imp: { name: 'Imp', dmg: 3, icon: '👺', school: 'fire', desc: 'Casts Firebolt for 3 Fire damage.' },
-  voidwalker: { name: 'Voidwalker', dmg: 1, icon: '🌀', school: 'shadow', desc: 'Torments for 1 and grants you 4 Block.', onAttack: c => c.gainBlock(4, undefined, true) },
+  voidwalker: { name: 'Voidwalker', dmg: 2, icon: '🌀', school: 'shadow', desc: 'Torments for 2 and grants you 5 Block.', onAttack: c => c.gainBlock(5, undefined, true) },
   succubus: { name: 'Succubus', dmg: 5, icon: '💋', school: 'shadow', desc: 'Lashes for 5 Shadow damage and applies 1 Exposed.', onAttack: (c, t) => { if (!t.dead) c.applyStatus(t, 'vuln', 1, true); } },
   felhunter: { name: 'Felhunter', dmg: 3, icon: '🐕', school: 'shadow', desc: 'Bites for 3 and devours one of your debuffs.',
     onAttack: c => { for (const s of ['weak', 'vuln', 'frail', 'poison', 'burn', 'bleed', 'affliction']) if (c.p.st[s]) { delete c.p.st[s]; break; } } },
@@ -144,5 +144,5 @@ export const CLASS_MECHANIC_TEXT: Record<ClassId, string> = {
   shaman: 'Totems: place one totem of each element (Earth, Fire, Water, Air). Each pulses every turn.',
   mage: 'Schools of magic: stack Chill to Freeze foes, set them Burning, or overwhelm with Arcane.',
   warlock: 'Demons & Soul Shards: summon demons to fight for you. Enemies that die while afflicted yield Soul Shards.',
-  druid: 'Shapeshifting: Bear Form tanks, Cat Form builds Combo Points. Casting caster spells shifts you back.',
+  druid: 'Shapeshifting: Bear Form tanks, Cat Form builds Combo Points. Bear and Cat abilities shift you into their form; casting caster spells shifts you back.',
 };
