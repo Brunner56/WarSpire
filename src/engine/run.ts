@@ -8,8 +8,10 @@ import { ALL_CARDS, getCard, canUpgrade, cardActions, POTIONS } from '../data/ca
 import { CLASS_BY_ID, starterDeck } from '../data/classes';
 import { PETS } from '../data/mechanics';
 import { EVENTS, EventApi, EventResult } from '../data/events';
-import { canEquip, itemScore, namedLoot, randomItem, rollQuality, UidGen } from './loot';
+import { canEquip, itemScore, namedLoot, randomItem, rollQuality, UidGen, dungeonSetPiece } from './loot';
 import { talentPointsForLevel } from '../data/talents';
+import { difficulty } from '../data/difficulty';
+import type { Profile } from './save';
 
 export type NodeType = 'combat' | 'elite' | 'rest' | 'shop' | 'event' | 'treasure' | 'boss';
 export interface MapNode { id: number; row: number; col: number; type: NodeType; next: number[] }
@@ -61,14 +63,6 @@ export interface RunState {
 }
 
 export const BAG_SIZE = 8;
-export const HEROIC_RANKS = [
-  { name: 'Normal', desc: 'The standard experience.' },
-  { name: 'Heroic I', desc: 'Elites have 25% more HP.' },
-  { name: 'Heroic II', desc: '+ All enemies deal 10% more damage.' },
-  { name: 'Heroic III', desc: '+ Start runs at 85% HP.' },
-  { name: 'Heroic IV', desc: '+ Bosses have 20% more HP and 2 Attack Power.' },
-  { name: 'Heroic V', desc: '+ Resting heals less and you begin with Curse of Tongues.' },
-];
 
 // ---------------------------------------------------------------------------
 export function dungeonOf(run: RunState): DungeonDef { return DUNGEON_BY_ID[run.dungeonId]; }
@@ -103,11 +97,10 @@ export function newRun(ch: Character, dungeonId: string, rank: number, uidStart:
     found: [], xp: 0, kills: { normal: 0, elite: 0, boss: 0 }, combats: 0, removals: 0, uid: Math.max(uidStart, 100000), pending: null,
     lastEnc: '', combatSeed: r.int(1, 2 ** 31), log: [],
   };
-  if (rank >= 5) run.deck.push({ uid: cuid++, id: 'c_tongues', up: false });
   run.map = genMap(r, d.acts[0].rows);
   save(run, r);
   const mx = maxHpOf(run, ch);
-  run.hp = rank >= 3 ? Math.round(mx * 0.85) : mx;
+  run.hp = mx;
   run.potions[0] = 'po_heal';
   return run;
 }
@@ -209,18 +202,15 @@ export function makeCombat(run: RunState, ch: Character): Combat {
   const d = runDerived(run, ch);
   const dg = dungeonOf(run);
   const sc = tierScale(dg.tier);
-  let hpScale = sc.hp;
-  let dmgScale = sc.dmg;
-  if (run.rank >= 2) dmgScale *= 1.1;
-  if (p.node === 'elite' && run.rank >= 1) hpScale *= 1.25;
-  if (p.node === 'boss' && run.rank >= 4) hpScale *= 1.2;
+  const df = difficulty(run.rank);
+  const hpScale = sc.hp * df.hp;
+  const dmgScale = sc.dmg * df.dmg;
   const pet = ch.cls === 'hunter' ? (() => { const pd = PETS[ch.pet ?? 'wolf']; return { id: ch.pet ?? 'wolf', name: pd.name, dmg: pd.dmg, icon: pd.icon }; })() : null;
   const c = new Combat({
     cls: ch.cls, name: ch.name, deck: run.deck.filter(ci => getCard(ci.id).cls !== 'token'), hp: Math.min(run.hp, d.maxHp), maxHp: d.maxHp,
     ap: d.ap, sp: d.sp, physCrit: d.physCrit, spellCrit: d.spellCrit, startBlock: d.startBlock,
     passives: runProviders(run, ch), pet, enemies: p.enemies, hpScale, dmgScale, seed: run.combatSeed, potions: run.potions,
   });
-  if (p.node === 'boss' && run.rank >= 4) for (const e of c.enemies) if (e.def.boss) e.st.str = (e.st.str ?? 0) + 2;
   return c;
 }
 
@@ -245,7 +235,8 @@ export function resolveCombat(run: RunState, ch: Character, c: Combat): boolean 
   run.combats++;
   const dg = dungeonOf(run);
   const tier = dg.tier;
-  const xpMul = 1 + run.rank * 0.15;
+  const df = difficulty(run.rank);
+  const xpMul = df.xp;
   const goldMul = (1 + d.run.gold) * (1 + 0.08 * tier);
   let gold = 0;
   let cards: CardInst[] | null = null;
@@ -257,7 +248,8 @@ export function resolveCombat(run: RunState, ch: Character, c: Combat): boolean 
     run.xp += Math.round(xpUnit(tier) * xpMul);
     gold = Math.round(r.int(12, 18) * goldMul);
     cards = cardChoices(run, ch, r, 'normal', 3 + d.run.cardChoices);
-    if (r.chance(0.12 + run.rank * 0.02)) items.push(randomItem(r, ch.cls, tier, rollQuality(r, tier, run.rank, dg.kind === 'raid'), ug.g));
+    if (r.chance(0.12 + df.loot * 0.03)) items.push(randomItem(r, ch.cls, tier, rollQuality(r, tier, df.loot, dg.kind === 'raid'), ug.g));
+    const sp = dungeonSetDrop(run, ch, r, ug.g, 0.05); if (sp) items.push(sp);
     if (r.chance(0.35)) potion = randomPotion(r);
   } else if (p.node === 'elite') {
     run.kills.elite++;
@@ -265,7 +257,8 @@ export function resolveCombat(run: RunState, ch: Character, c: Combat): boolean 
     gold = Math.round(r.int(28, 36) * goldMul);
     cards = cardChoices(run, ch, r, 'elite', 3 + d.run.cardChoices);
     const named = r.chance(0.6) ? namedLoot(r, ch.cls, dg.id, ug.g, { includeSets: dg.kind === 'raid' }) : [];
-    items.push(...(named.length ? named : [randomItem(r, ch.cls, tier, rollQuality(r, tier, run.rank + 2, dg.kind === 'raid'), ug.g)]));
+    items.push(...(named.length ? named : [randomItem(r, ch.cls, tier, rollQuality(r, tier, df.loot + 2, dg.kind === 'raid'), ug.g)]));
+    const sp = dungeonSetDrop(run, ch, r, ug.g, 0.3); if (sp) items.push(sp);
     if (r.chance(0.5)) potion = randomPotion(r);
   } else {
     run.kills.boss++;
@@ -273,7 +266,9 @@ export function resolveCombat(run: RunState, ch: Character, c: Combat): boolean 
     gold = Math.round(r.int(70, 90) * goldMul);
     cards = cardChoices(run, ch, r, 'boss', 3 + d.run.cardChoices);
     const loot = namedLoot(r, ch.cls, dg.id, ug.g, { minQ: dg.kind === 'raid' ? 'epic' : 'rare', count: 3, includeSets: dg.kind === 'raid' });
-    while (loot.length < 3) loot.push(randomItem(r, ch.cls, tier, dg.kind === 'raid' ? 'epic' : 'rare', ug.g));
+    const sp = dungeonSetDrop(run, ch, r, ug.g, 1);
+    if (sp) { loot.splice(2); loot.push(sp); }
+    while (loot.length < 3) loot.push(randomItem(r, ch.cls, tier, dg.kind === 'raid' || r.chance(df.loot * 0.08) ? 'epic' : 'rare', ug.g));
     items.push(...loot);
     potion = randomPotion(r);
   }
@@ -288,11 +283,22 @@ function treasureReward(run: RunState, ch: Character, r: Rng): Pending {
   const dg = dungeonOf(run);
   const ug = uidGen(run);
   const named = r.chance(0.5) ? namedLoot(r, ch.cls, dg.id, ug.g) : [];
-  const items = named.length ? named : [randomItem(r, ch.cls, dg.tier, rollQuality(r, dg.tier, run.rank + 1, dg.kind === 'raid'), ug.g)];
+  const df = difficulty(run.rank);
+  const items = named.length ? named : [randomItem(r, ch.cls, dg.tier, rollQuality(r, dg.tier, df.loot + 1, dg.kind === 'raid'), ug.g)];
+  const sp = dungeonSetDrop(run, ch, r, ug.g, 0.25); if (sp) items.push(sp);
   ug.done();
   const gold = Math.round(r.int(25, 45) * (1 + 0.08 * dg.tier));
   run.gold += gold;
   return { kind: 'reward', title: 'Treasure Chest', gold, cards: null, items, potion: null };
+}
+
+/** On Heroic and above, dungeons can drop pieces of the class's dungeon sets. */
+function dungeonSetDrop(run: RunState, ch: Character, r: Rng, uid: UidGen, chance: number): Item | null {
+  const df = difficulty(run.rank);
+  const dg = dungeonOf(run);
+  if (dg.kind !== 'dungeon' || !df.sets.length || !r.chance(chance)) return null;
+  const which = df.sets.length > 1 && r.chance(0.6) ? 2 : 1;
+  return dungeonSetPiece(r, ch.cls, which, dg.tier, uid);
 }
 
 export function randomPotion(r: Rng): string {
@@ -415,7 +421,7 @@ export function finishReward(run: RunState, ch: Character) {
   if (p.boss) {
     const dg = dungeonOf(run);
     if (run.act < dg.acts.length - 1) run.pending = { kind: 'actEnd' };
-    else { run.xp += Math.round(xpUnit(dg.tier) * 6 * (1 + run.rank * 0.15)); run.pending = { kind: 'end', win: true }; }
+    else { run.xp += Math.round(xpUnit(dg.tier) * 6 * difficulty(run.rank).xp); run.pending = { kind: 'end', win: true }; }
   } else run.pending = null;
 }
 
@@ -435,7 +441,7 @@ export function nextAct(run: RunState, ch: Character) {
 // Rest sites
 export function restHeal(run: RunState, ch: Character): number {
   const d = runDerived(run, ch);
-  const pct = (run.rank >= 5 ? 0.2 : 0.3) + d.run.rest;
+  const pct = 0.3 + d.run.rest;
   const amt = Math.round(d.maxHp * pct);
   run.hp = Math.min(d.maxHp, run.hp + amt);
   if (run.pending?.kind === 'rest') run.pending.done = true;
@@ -589,7 +595,7 @@ export function eventApi(run: RunState, ch: Character, r: Rng): EventApi {
 // End of run: experience, levels, attunements and kept loot.
 export interface RunSummary { win: boolean; xp: number; levelsGained: number; newLevel: number; newTalentPoints: number; newCards: string[]; kept: Item[]; unlocked?: string; rankCleared?: number }
 
-export function keepLimit(run: RunState): number { return dungeonOf(run).kind === 'raid' ? 2 : 1; }
+export function keepLimit(run: RunState): number { return (dungeonOf(run).kind === 'raid' ? 2 : 1) + difficulty(run.rank).keepBonus; }
 
 export function keepCandidates(run: RunState): Item[] {
   const all = [...gearList(run), ...run.bag];
@@ -621,6 +627,7 @@ export function finishRun(ch: Character, run: RunState, keepUids: number[]): Run
     }
     const prev = ch.cleared[run.dungeonId] ?? -1;
     if (run.rank > prev) ch.cleared[run.dungeonId] = run.rank;
+    if (difficulty(run.rank).permadeath) ch.hardcore = { ...(ch.hardcore ?? {}), [run.dungeonId]: true };
     rankCleared = run.rank;
     const next = Object.values(DUNGEON_BY_ID).find(d => d.unlock === run.dungeonId);
     if (next && prev < 0) unlocked = next.name;
@@ -634,8 +641,23 @@ export function isUnlocked(ch: Character, dungeonId: string): boolean {
   return !d.unlock || (ch.cleared[d.unlock] ?? -1) >= 0;
 }
 
-export function maxRank(ch: Character, dungeonId: string): number {
-  return Math.min(HEROIC_RANKS.length - 1, (ch.cleared[dungeonId] ?? -1) + 1);
+/** Heroic unlocks by clearing Normal; Mythic and Hardcore unlock by clearing Heroic. */
+export function rankUnlocked(ch: Character, dungeonId: string, rank: number): boolean {
+  const cleared = ch.cleared[dungeonId] ?? -1;
+  if (rank <= 0) return true;
+  if (rank === 1) return cleared >= 0;
+  return cleared >= 1;
+}
+
+/** A hero who falls on Hardcore is erased along with everything they earned. */
+export function buryHero(profile: Profile, charId: string, dungeonId: string) {
+  const ch = profile.characters.find(c => c.id === charId);
+  if (ch) {
+    profile.fallen = [...(profile.fallen ?? []), { name: ch.name, race: ch.race, cls: ch.cls, level: ch.level, dungeon: DUNGEON_BY_ID[dungeonId]?.name ?? dungeonId, at: Date.now() }].slice(-30);
+  }
+  profile.characters = profile.characters.filter(c => c.id !== charId);
+  if (profile.run?.charId === charId) profile.run = null;
+  if (profile.activeId === charId) profile.activeId = profile.characters[0]?.id ?? null;
 }
 
 export function classOf(ch: Character) { return CLASS_BY_ID[ch.cls]; }

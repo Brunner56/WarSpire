@@ -4,6 +4,9 @@ import { charDoll } from './title';
 import { statsPanel } from './hub';
 import { renderCombat } from './combat';
 import { settingsModal, applySettings } from '../settings';
+import { difficulty } from '../../data/difficulty';
+import { RACE_BY_ID } from '../../data/races';
+import { CLASS_BY_ID } from '../../data/classes';
 import { cardEl, showCard, itemTile, itemTooltip, goldEl, hpBar } from '../components';
 import { getCard, canUpgrade } from '../../data/cards';
 import { EVENTS } from '../../data/events';
@@ -15,7 +18,7 @@ import { setCounts, Character } from '../../engine/character';
 import {
   RunState, reachable, enterNode, makeCombat, takeRewardCard, skipRewardCards, takeRewardPotion, takeRewardItem, finishReward, nextAct, restHeal, upgradeCard,
   removeCard, duplicateCard, leaveNode, buyCard, buyItem, buyPotion, buyRemoval, chooseEvent, eventFollowUp, finishRun, keepCandidates, keepLimit,
-  maxHpOf, gearList, runDerived, equipItem, unequip, sellBagItem, sellValue, drinkPotionOutside, actOf, dungeonOf, HEROIC_RANKS, MapNode, RunSummary,
+  maxHpOf, gearList, runDerived, equipItem, unequip, sellBagItem, sellValue, drinkPotionOutside, actOf, dungeonOf, buryHero, MapNode, RunSummary,
 } from '../../engine/run';
 import type { CardInst, Item } from '../../engine/types';
 
@@ -64,7 +67,7 @@ export function topBar(app: App, run: RunState, ch: Character, inCombat = false)
       h('button', { class: 'btn small', title: 'Sound', onclick: () => { app.profile.settings.sound = !app.profile.settings.sound; applySettings(app.profile.settings); app.save(); app.render(); } }, app.profile.settings.sound ? '🔊' : '🔇'),
       h('button', { class: 'btn small', onclick: () => menuModal(app, run) }, '☰'),
     ),
-    h('div', { class: 'tb-where' }, `${dg.icon} ${dg.name}${dg.acts.length > 1 ? ` — ${actOf(run).name}` : ''}${run.rank ? ` · ${HEROIC_RANKS[run.rank].name}` : ''}`),
+    h('div', { class: 'tb-where' }, `${dg.icon} ${dg.name}${dg.acts.length > 1 ? ` — ${actOf(run).name}` : ''}${run.rank ? ` · ${difficulty(run.rank).icon} ${difficulty(run.rank).name}` : ''}`),
   );
 }
 
@@ -75,7 +78,8 @@ function menuModal(app: App, run: RunState) {
     h('button', { class: 'btn', onclick: () => { close(); app.go('title'); } }, 'Save & Quit to Title'),
     h('button', { class: 'btn danger', onclick: () => {
       close();
-      const c2 = modal(h('div', null, h('h3', null, 'Abandon run?'), h('p', null, 'You keep experience earned so far but no loot.'),
+      const hc = difficulty(run.rank).permadeath;
+      const c2 = modal(h('div', null, h('h3', null, 'Abandon run?'), h('p', null, hc ? '☠️ This is a Hardcore run. Abandoning counts as death and your hero will be erased.' : 'You keep experience earned so far but no loot.'),
         h('button', { class: 'btn danger', onclick: () => { run.pending = { kind: 'end', win: false }; app.combat = null; app.save(); c2(); app.render(); } }, 'Abandon')));
     } }, 'Abandon Run'),
   ));
@@ -191,7 +195,7 @@ function pendingView(app: App, run: RunState, ch: Character): HTMLElement {
     }
     case 'rest': {
       const d = runDerived(run, ch);
-      const heal = Math.round(d.maxHp * ((run.rank >= 5 ? 0.2 : 0.3) + d.run.rest));
+      const heal = Math.round(d.maxHp * (0.3 + d.run.rest));
       return h('div', { class: 'rest' },
         h('div', { class: 'campfire' }, '🔥'),
         h('h2', null, 'Campfire'),
@@ -280,6 +284,21 @@ function endView(app: App, run: RunState, ch: Character, win: boolean) {
     } }, itemTile(it), h('span', { class: 'check' }, chosen.has(it.uid) ? '✅' : '⬜'))));
   };
   draw();
+  if (!win && difficulty(run.rank).permadeath) {
+    return h('div', { class: 'reward end hc-dead' },
+      h('div', { class: 'ev-icon' }, '🪦'),
+      h('h2', null, `${ch.name} has fallen.`),
+      h('p', null, `Level ${ch.level} ${RACE_BY_ID[ch.race].name} ${CLASS_BY_ID[ch.cls].name} · slain in ${dg.name} on Hardcore.`),
+      h('p', { class: 'muted' }, 'Hardcore death is permanent. This hero, their levels, talents, gear and cleared dungeons are erased. Their name will be remembered in the Hall of the Fallen.'),
+      h('button', { class: 'btn danger big', onclick: () => {
+        app.profile.nextUid = Math.max(app.profile.nextUid, run.uid + 1);
+        buryHero(app.profile, ch.id, run.dungeonId);
+        app.combat = null;
+        app.save();
+        app.go('title');
+      } }, 'Farewell'),
+    );
+  }
   return h('div', { class: 'reward end' },
     h('div', { class: 'ev-icon' }, win ? '🏆' : '💀'),
     h('h2', null, win ? `${dg.name} Conquered!` : 'You have fallen...'),

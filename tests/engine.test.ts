@@ -165,3 +165,47 @@ describe('wow art mapping', () => {
     expect(TALENTS.filter(t => !t.card && !TALENT_ICONS[t.name]).map(t => t.name)).toEqual([]);
   });
 });
+
+describe('difficulties', () => {
+  it('unlock in order: Heroic after Normal, Mythic/Hardcore after Heroic', async () => {
+    const { rankUnlocked } = await import('../src/engine/run');
+    const ch = makeChar('mage', 'gnome', 'fire', 10);
+    expect([0, 1, 2, 3].map(r => rankUnlocked(ch, 'rfc', r))).toEqual([true, false, false, false]);
+    ch.cleared.rfc = 0;
+    expect([0, 1, 2, 3].map(r => rankUnlocked(ch, 'rfc', r))).toEqual([true, true, false, false]);
+    ch.cleared.rfc = 1;
+    expect([0, 1, 2, 3].map(r => rankUnlocked(ch, 'rfc', r))).toEqual([true, true, true, true]);
+  });
+  it('Heroic and Mythic make enemies tougher; Hardcore matches Mythic', async () => {
+    const { DIFFICULTIES } = await import('../src/data/difficulty');
+    const [n, he, my, hc] = DIFFICULTIES;
+    expect(he.hp).toBeGreaterThan(n.hp); expect(he.dmg).toBeGreaterThan(n.dmg);
+    expect(my.hp).toBeGreaterThan(he.hp); expect(my.dmg).toBeGreaterThan(he.dmg);
+    expect([hc.hp, hc.dmg, hc.permadeath]).toEqual([my.hp, my.dmg, true]);
+  });
+  it('every class has two dungeon sets that drop as class-restricted pieces weaker than raid sets', async () => {
+    const { SETS, makeItem: mk, setPieces } = await import('../src/data/items');
+    const { dungeonSetPiece, UidGen } = await import('../src/engine/loot');
+    const { budget } = await import('../src/data/items');
+    for (const c of CLASSES) for (const which of [1, 2] as const) {
+      const it = dungeonSetPiece(new Rng(which), c.id, which, 9, new UidGen(1));
+      expect(it.set, c.id).toBeTruthy();
+      expect(it.cls, c.id).toEqual([c.id]);
+      expect(SETS.find(s => s.id === it.set)!.kind).toBe('dungeon');
+    }
+    const raidPiece = mk(setPieces(SETS.find(s => s.kind === 'raid')!.id)[0], 1);
+    expect(budget('epic', 9)).toBeLessThan(budget(raidPiece.q, 11));
+  });
+  it('a Hardcore death erases the hero and records them in the Hall of the Fallen', async () => {
+    const { buryHero } = await import('../src/engine/run');
+    const { newProfile } = await import('../src/engine/save');
+    const prof = newProfile();
+    const a = makeChar('warrior', 'orc', 'arms', 30), b = makeChar('priest', 'dwarf', 'holy', 12);
+    a.id = 'a'; b.id = 'b';
+    prof.characters = [a, b]; prof.activeId = 'a';
+    buryHero(prof, 'a', 'strat');
+    expect(prof.characters.map(c => c.id)).toEqual(['b']);
+    expect(prof.activeId).toBe('b');
+    expect(prof.fallen?.[0]).toMatchObject({ name: a.name, level: 30, dungeon: 'Stratholme' });
+  });
+});

@@ -21,7 +21,9 @@ export interface Character {
   talents: Record<string, number>;
   armory: Item[];
   equipped: Partial<Record<Slot, number>>; // uid of armory item
-  cleared: Record<string, number>; // dungeon id -> highest heroic rank cleared
+  cleared: Record<string, number>; // dungeon id -> highest difficulty cleared (0 Normal, 1 Heroic, 2 Mythic, 3 Hardcore)
+  /** dungeons cleared on Hardcore */
+  hardcore?: Record<string, boolean>;
   stats: { runs: number; wins: number; deaths: number; bossKills: number; bestFloor: number };
   created: number;
 }

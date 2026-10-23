@@ -43,6 +43,7 @@ registerScreen('title', (app: App) => {
     h('div', { class: 'title-foot' },
       h('button', { class: 'btn ghost', onclick: () => howToPlay() }, '📜 How to Play'),
       h('button', { class: 'btn ghost', onclick: () => settingsModal(app) }, '🔊 Settings'),
+      p.fallen?.length ? h('button', { class: 'btn ghost', onclick: () => hallOfFallen(app) }, `🪦 Fallen (${p.fallen.length})`) : null,
       h('button', { class: 'btn ghost', onclick: () => { p.settings.wowArt = !p.settings.wowArt; setWowArt(p.settings.wowArt); app.save(); app.render(); } }, `🎨 WoW Art: ${p.settings.wowArt ? 'On' : 'Off'}`),
       h('button', { class: 'btn ghost', onclick: () => {
         const close = modal(h('div', null, h('h3', null, 'Erase all progress?'), h('p', null, 'This deletes every character and run. This cannot be undone.'),
@@ -54,6 +55,17 @@ registerScreen('title', (app: App) => {
   return root;
 });
 
+function hallOfFallen(app: App) {
+  const list = [...(app.profile.fallen ?? [])].reverse();
+  modal(h('div', null,
+    h('h3', null, '🪦 Hall of the Fallen'),
+    h('p', { class: 'muted small' }, 'Hardcore heroes whose journey ended.'),
+    list.map(f => h('div', { class: 'srow' },
+      h('span', null, h('b', { style: { color: CLASS_BY_ID[f.cls].color } }, f.name), ` · Level ${f.level} ${RACE_BY_ID[f.race].name} ${CLASS_BY_ID[f.cls].name}`),
+      h('span', { class: 'muted small' }, `${f.dungeon} · ${new Date(f.at).toLocaleDateString()}`))),
+  ));
+}
+
 export function howToPlay() {
   modal(h('div', { class: 'howto' },
     h('h2', null, 'How to Play'),
@@ -64,6 +76,9 @@ export function howToPlay() {
     h('p', null, 'Each turn you gain resource and draw 5 cards. Tap a card to select it, then tap an enemy (or Cast). Enemies show their intent above their heads. Block expires at the start of your turn; Shields do not.'),
     h('h3', null, 'Building your hero'),
     h('p', null, 'After fights, choose rewards that synergise with your spec. Gear raises your stats and rare items change how you play. Equipped gear appears on your character. At the end of a successful run you keep one item (two from raids) for future runs.'),
-    h('p', null, 'Levelling up unlocks new abilities and talent points. Talent capstones grant signature abilities like Mortal Strike, Shadowform or Moonkin Form. Clear a dungeon to unlock Heroic ranks for greater challenge and rewards.'),
+    h('p', null, 'Levelling up unlocks new abilities and talent points. Talent capstones grant signature abilities like Mortal Strike, Shadowform or Moonkin Form.'),
+    h('h3', null, 'Difficulty'),
+    h('p', null, '⚔️ Normal is the standard experience. Clear a dungeon on Normal to unlock 🛡️ Heroic, and clear Heroic to unlock 🔥 Mythic and ☠️ Hardcore. Heroic and Mythic enemies have far more health and hit much harder, but drop more rare and epic loot, pieces of your class\'s Dungeon Sets, and let you keep an extra item.'),
+    h('p', null, '☠️ Hardcore plays at Mythic difficulty with permadeath: if your hero falls, they and all their progress are erased forever.'),
   ));
 }
