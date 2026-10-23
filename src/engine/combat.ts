@@ -10,8 +10,11 @@ import { getEnemyDef } from '../data/dungeons';
 import { SEALS, TOTEMS, FORMS, PETS, STATUS_HOOKS, CLASS_HOOKS } from '../data/mechanics';
 
 export interface CEvent {
-  t: 'dmg' | 'heal' | 'block' | 'status' | 'text' | 'die' | 'dodge' | 'play' | 'summon' | 'phase';
+  t: 'dmg' | 'heal' | 'block' | 'status' | 'text' | 'die' | 'dodge' | 'play' | 'summon' | 'phase' | 'swing' | 'petAtk';
   uid: number;
+  /** play: the card id; swing/petAtk: who is being attacked */
+  card?: string;
+  tgt?: number;
   n?: number;
   text?: string;
   school?: School;
@@ -407,6 +410,7 @@ export class Combat {
     let amt = n * e.dmgMult + (e.st.str ?? 0);
     if (e.st.weak) amt *= 0.75;
     if (p.st.vuln) amt *= 1.5;
+    this.ev({ t: 'swing', uid: e.uid, tgt: p.uid });
     const d: DmgCalc = { src: 'enemy', school: 'physical', amt, target: p, attacker: e, isAttack: true };
     this.each(x => x.h.inDmg?.(this, x.n, d));
     let dmg = Math.max(0, Math.floor(d.amt));
@@ -603,6 +607,7 @@ export class Combat {
     const amt = pet.dmg + scale + (this.p.st.petpow ?? 0);
     const def = PETS[pet.id];
     const school: School = def?.school ?? 'physical';
+    this.ev({ t: 'petAtk', uid: this.p.uid, tgt: t.uid, school });
     if (def?.aoe) for (const e of this.alive()) this.effectDamage(e, amt, school, 'pet');
     else this.effectDamage(t, amt, school, 'pet');
     def?.onAttack?.(this, t);
@@ -739,7 +744,7 @@ export class Combat {
     this.p.res -= cost;
     if (def.shards) this.p.shards -= def.shards;
     this.hand.splice(handIdx, 1);
-    this.ev({ t: 'play', uid: this.p.uid, text: def.name });
+    this.ev({ t: 'play', uid: this.p.uid, text: def.name, card: def.id, tgt: target?.uid, school: def.school });
     this.log(`You cast ${def.name}.`);
     if (kw.includes('caster') && (this.p.form === 'bear' || this.p.form === 'cat')) {
       this.p.form = 'caster';
@@ -903,7 +908,7 @@ export class Combat {
     this.potions[slot] = null;
     const ctx = this.mkCtx({ uid: -1, id, up: false }, def, target);
     for (const a of def.a) this.doAction(a, ctx, false);
-    this.ev({ t: 'play', uid: this.p.uid, text: def.name });
+    this.ev({ t: 'play', uid: this.p.uid, text: def.name, card: def.id, tgt: target?.uid, school: def.school });
     this.checkEnd();
     return true;
   }

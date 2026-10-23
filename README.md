@@ -15,6 +15,12 @@ Every run is a classic dungeon. Pick a path through a branching map, fight with 
 - **3 raids** with multi-phase bosses: Onyxia (Deep Breath, whelps, fear), Molten Core (Garr, Majordomo, Ragnaros' submerge), Blackwing Lair (Razorgore's eggs, Vaelastrasz's Burning Adrenaline, Chromaggus' afflictions, Nefarian's class calls).
 - **Progression & replayability**: persistent heroes with XP/levels, talent points, a kept-loot armory (keep 1 item per dungeon win, 2 per raid), dungeon unlock chain + raid attunement, and Heroic I–V difficulty ranks per dungeon.
 - Random events (Spirit Healer, Goblin gambler, a certain reckless paladin...), Goblin vendors, campfires and treasure.
+- **Sound, music and animation, all generated in code (no audio or sprite files)**:
+  - Synthesized sound effects, with a different sound for each spell school.
+  - A generative soundtrack: tavern, dungeon, battle, boss and raid themes.
+  - Combat animations: weapon swings and casting poses, projectiles, lightning, holy beams, impacts, status effects and death dissolves.
+  - Volume and animation options in ⚙️ Settings.
+- **Version label** on the title screen (`v1.1.0 · build N (commit)`), so you can tell when the GitHub Pages site has updated.
 
 ## Running
 

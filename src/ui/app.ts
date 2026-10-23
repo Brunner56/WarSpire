@@ -18,6 +18,8 @@ export class App {
   hubTab = 'dungeons';
   busy = false;
   scrollMemo: Record<string, number> = {};
+  /** Called after every render (music and ambient sounds). */
+  afterRender: (app: App) => void = () => undefined;
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -50,5 +52,6 @@ export class App {
       const v = this.scrollMemo[el.dataset.scroll!];
       if (v !== undefined) el.scrollTop = v;
     });
+    this.afterRender(this);
   }
 }

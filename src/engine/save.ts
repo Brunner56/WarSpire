@@ -4,7 +4,11 @@ import type { RunState } from './run';
 import type { ClassId, RaceId, Slot } from './types';
 import { starterItems, UidGen } from './loot';
 
-export interface Settings { fast: boolean; sound: boolean; wowArt: boolean }
+export interface Settings {
+  fast: boolean; sound: boolean; wowArt: boolean;
+  /** 0..1 volumes; motion = combat animations */
+  musicVol: number; sfxVol: number; motion: boolean;
+}
 
 export interface Profile {
   v: 1;
@@ -18,7 +22,7 @@ export interface Profile {
 const KEY = 'warspire.profile.v1';
 
 export function newProfile(): Profile {
-  return { v: 1, characters: [], activeId: null, run: null, nextUid: 1, settings: { fast: false, sound: true, wowArt: true } };
+  return { v: 1, characters: [], activeId: null, run: null, nextUid: 1, settings: { fast: false, sound: true, wowArt: true, musicVol: 0.6, sfxVol: 0.8, motion: true } };
 }
 
 export function loadProfile(): Profile {

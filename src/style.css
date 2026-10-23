@@ -79,7 +79,7 @@ input { font: inherit; -webkit-user-select: text; user-select: text; }
 .char-card .plus { font-size: 2rem; }
 .cc-name { font-family: var(--serif); font-size: 1.2rem; font-weight: 700; }
 .cc-sub { font-size: 0.85rem; }
-.title-foot { display: flex; justify-content: space-between; margin-top: 18px; }
+.title-foot { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 18px; }
 .howto p { font-size: 0.92rem; }
 
 /* ---------- panels & create ---------- */
@@ -308,7 +308,9 @@ img.eimg { width: 100%; max-height: 165px; object-fit: contain; filter: drop-sha
 .enemy .eart svg { width: 100%; height: auto; max-height: 165px; }
 .enemies:has(.enemy:nth-child(4)) .enemy .eart svg { max-height: 100px; }
 .enemy.boss .eart svg { max-height: 220px; }
-.enemy.dead { opacity: 0; transform: scale(0.8) translateY(10px); pointer-events: none; }
+.enemy.dead { pointer-events: none; animation: edie 0.9s 0.35s ease-in forwards; }
+@keyframes edie { 0% { filter: none; } 25% { filter: brightness(2.4) saturate(0); } 100% { opacity: 0; transform: translateY(18px) scale(0.85); filter: brightness(0.3) blur(2px); } }
+body.nomotion .enemy.dead { animation: none; opacity: 0; transition: opacity 0.4s; }
 .enemy.targetable { filter: drop-shadow(0 0 6px #ff5a4a); }
 .enemy.targetable .eart { animation: bob 0.9s infinite alternate; }
 @keyframes bob { to { transform: translateY(-4px); } }
@@ -459,3 +461,46 @@ span.iimg.wwrap { width: 100%; height: 100%; }
 .hand-card { margin: 0 -11px; }
 .hand.n6 .hand-card, .hand.n7 .hand-card { margin: 0 -19px; }
 .hand.n8 .hand-card, .hand.n9 .hand-card, .hand.n10 .hand-card { margin: 0 -28px; }
+
+/* ---------- animation & effects ---------- */
+#fx-over { position: fixed; inset: 0; pointer-events: none; z-index: 60; overflow: hidden; }
+#fx-over > div, #fx-over > svg { position: absolute; }
+#fx-over .floater { z-index: 2; }
+.fxp { border-radius: 50%; background: var(--c); box-shadow: 0 0 6px var(--c); transform: translate(-50%, -50%); }
+.fxp.ch { background: none; box-shadow: none; color: var(--c); line-height: 1; text-shadow: 0 0 6px var(--c); width: auto !important; height: auto !important; }
+.fxring { width: 60px; height: 60px; border-radius: 50%; border: 4px solid var(--c); box-shadow: 0 0 18px var(--c), inset 0 0 12px var(--c1); transform: translate(-50%, -50%); }
+.fxflash { width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, var(--c) 0%, transparent 65%); transform: translate(-50%, -50%); mix-blend-mode: screen; }
+.fxslash { width: 120px; height: 10px; border-radius: 50%; background: linear-gradient(90deg, transparent, #fff 45%, #ffe6b0 60%, transparent); box-shadow: 0 0 12px #fff; transform-origin: center; }
+.fxtrail { width: 12px; height: 12px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px var(--c); transform: translate(-50%, -50%); }
+.fxglow { width: 34px; height: 34px; border-radius: 50%; background: radial-gradient(circle, #fff 0%, var(--c) 30%, var(--c2) 60%, transparent 72%); transform: translate(-50%, -50%); mix-blend-mode: screen; }
+.fxbeam { width: 46px; height: 260px; background: linear-gradient(transparent, var(--c) 35%, #fff 80%, var(--c2)); border-radius: 30px; box-shadow: 0 0 30px var(--c2); transform-origin: 50% 100%; mix-blend-mode: screen; }
+.fxshield { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #bfe0ff; background: radial-gradient(circle, rgba(140, 200, 255, 0.05) 50%, rgba(140, 200, 255, 0.45)); box-shadow: 0 0 16px #8ac8ff; transform: translate(-50%, -50%); }
+.fxbolt { left: 0; top: 0; overflow: visible; }
+.fxbolt path { fill: none; stroke: #f2fbff; stroke-width: 3.5; stroke-linejoin: round; filter: drop-shadow(0 0 4px #7fd0ff) drop-shadow(0 0 10px #4aa8ff); }
+.fxcard { transform-origin: center; z-index: 3; }
+.fxcard > .card { margin: 0 !important; }
+.proj { transform: translate(-50%, -50%); z-index: 2; }
+.proj.orb { width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #fff 0%, var(--c) 35%, var(--c2) 75%); box-shadow: 0 0 14px var(--c2), 0 0 26px var(--c2); }
+.proj.orb.big { width: 26px; height: 26px; }
+.proj.orb.small { width: 11px; height: 11px; }
+.proj.orb.pet { width: 14px; height: 14px; }
+.proj.shard { width: 30px; height: 10px; background: linear-gradient(90deg, transparent, var(--c2) 30%, #fff 85%); clip-path: polygon(0 50%, 70% 0, 100% 50%, 70% 100%); filter: drop-shadow(0 0 6px var(--c2)); }
+.proj.arrow { width: 36px; height: 4px; background: linear-gradient(90deg, #d8c090 0 18%, #6b4a2a 18% 82%, #ddd 82%); border-radius: 2px; box-shadow: 0 0 4px rgba(255, 255, 255, 0.5); }
+
+/* idle life */
+.d-arm { transform-origin: 0 0; }
+.d-breath { transform-origin: 0 0; animation: breathe 3.4s ease-in-out infinite; }
+@keyframes breathe { 50% { transform: scale(1.012, 1.022); } }
+.enemy .eart > svg { transform-origin: 50% 100%; animation: ebreathe 2.9s ease-in-out infinite; }
+.enemy:nth-child(2) .eart > svg { animation-delay: -0.8s; animation-duration: 3.2s; }
+.enemy:nth-child(3) .eart > svg { animation-delay: -1.6s; animation-duration: 2.6s; }
+.enemy.boss .eart > svg { animation-duration: 3.8s; }
+@keyframes ebreathe { 50% { transform: scale(1.015, 1.03); } }
+body.nomotion .d-breath, body.nomotion .enemy .eart > svg { animation: none; }
+
+/* settings & version */
+.settings label.row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 10px 0; }
+.settings input[type=range] { flex: 1; max-width: 200px; accent-color: var(--gold); }
+.settings .vol { width: 3ch; text-align: right; color: var(--muted); }
+.version { text-align: center; font-size: 0.7rem; color: var(--muted); margin-top: 14px; opacity: 0.85; letter-spacing: 0.02em; }
+.version b { color: var(--gold2); font-weight: 600; }
