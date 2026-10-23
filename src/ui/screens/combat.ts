@@ -15,6 +15,8 @@ import { describeCard } from '../../engine/describe';
 import type { Combat, CEvent } from '../../engine/combat';
 import type { Character } from '../../engine/character';
 import { RunState, resolveCombat, gearList } from '../../engine/run';
+import { playCombatEvents, cardGhost } from '../fx';
+import { sfx } from '../sound/audio';
 import type { Enemy, EnemyMove, IntentKind } from '../../engine/types';
 
 let selected: number | null = null;
@@ -22,7 +24,6 @@ let potionSel: number | null = null;
 let lastCombat: Combat | null = null;
 
 const INTENT_ICON: Record<IntentKind, string> = { attack: '⚔️', defend: '🛡️', buff: '💪', debuff: '🌀', atkdef: '⚔️', atkdebuff: '⚔️', summon: '📯', stun: '💫', unknown: '❔', special: '⚠️' };
-const SCHOOL_CLASS: Record<string, string> = { physical: 'phys', holy: 'holy', fire: 'fire', frost: 'frost', arcane: 'arcane', shadow: 'shadow', nature: 'nature' };
 
 function intentEl(c: Combat, e: Enemy) {
   if (e.st.stun || e.st.poly) return h('div', { class: 'intent stun' }, h('span', null, e.st.poly ? '🐑' : '💫'), h('small', null, 'Stunned'));
@@ -105,9 +106,13 @@ export function renderCombat(app: App, run: RunState, ch: Character, c: Combat):
 
   const act = async (fn: () => void) => {
     if (app.busy) return;
+    const sel = document.querySelector('.hand-card.sel .card') as HTMLElement | null;
+    const ghost = sel ? { r: sel.getBoundingClientRect(), html: sel.outerHTML } : null;
+    const before = c.hand.length;
     fn();
     rr();
-    floaters(c);
+    if (ghost && c.hand.length < before) cardGhost(ghost.r, ghost.html);
+    playCombatEvents(c);
     if (c.over) await endCombat(app, run, ch, c);
   };
 
@@ -194,7 +199,6 @@ export function renderCombat(app: App, run: RunState, ch: Character, c: Combat):
       backdropEl(run.dungeonId),
       player,
       enemies,
-      h('div', { class: 'fx-layer' }),
       h('div', { class: 'turn-label' }, `Turn ${c.turn}`),
     ),
     selBar,
@@ -210,53 +214,6 @@ export function renderCombat(app: App, run: RunState, ch: Character, c: Combat):
   );
 }
 
-function floaters(c: Combat) {
-  const evs = c.events.splice(0);
-  const layer = document.querySelector('.fx-layer') as HTMLElement | null;
-  if (!layer) return;
-  const lr = layer.getBoundingClientRect();
-  const offsets: Record<number, number> = {};
-  for (const ev of evs) {
-    if (ev.t === 'play') continue;
-    const target = document.querySelector(`[data-uid="${ev.uid}"]`) as HTMLElement | null;
-    if (!target) continue;
-    const r = target.getBoundingClientRect();
-    const k = offsets[ev.uid] = (offsets[ev.uid] ?? 0) + 1;
-    const f = document.createElement('div');
-    f.className = 'floater ' + floatClass(ev);
-    f.textContent = floatText(ev);
-    f.style.left = `${r.left - lr.left + r.width / 2 + ((k % 3) - 1) * 16}px`;
-    f.style.top = `${r.top - lr.top + r.height * 0.35 - k * 6}px`;
-    f.style.animationDelay = `${(k - 1) * 90}ms`;
-    layer.appendChild(f);
-    setTimeout(() => f.remove(), 1500 + k * 90);
-    if (ev.t === 'dmg' && (ev.n ?? 0) > 0) { target.classList.remove('hit'); void target.offsetWidth; target.classList.add('hit'); }
-    if (ev.t === 'phase') toast(ev.text ?? '', 'bad');
-  }
-}
-
-function floatText(ev: CEvent): string {
-  switch (ev.t) {
-    case 'dmg': return ev.text ?? `${ev.crit ? '💥' : ''}-${ev.n}`;
-    case 'heal': return `+${ev.n}`;
-    case 'block': return `🛡${ev.n}`;
-    case 'status': return ev.text ? `${(ev.n ?? 0) > 1 ? ev.n + ' ' : ''}${statusName(ev.text)}` : '';
-    case 'dodge': return 'Dodge!';
-    case 'die': return '☠';
-    case 'summon': return ev.text ? `📯 ${ev.text}` : '📯';
-    case 'phase': return '⚠';
-    default: return ev.text ?? '';
-  }
-}
-function statusName(s: string) {
-  const m: Record<string, string> = { str: 'AP', sp: 'SP', vuln: 'Exposed', weak: 'Weak', frail: 'Sundered', poison: 'Poison', bleed: 'Bleed', burn: 'Burn', affliction: 'Affliction', chill: 'Chill', stun: 'Stun', poly: 'Sheep', mark: 'Mark', dodge: 'Dodge', thorns: 'Thorns', regen: 'Regen' };
-  return m[s] ?? s;
-}
-function floatClass(ev: CEvent): string {
-  if (ev.t === 'dmg') return `dmg ${SCHOOL_CLASS[ev.school ?? 'physical'] ?? ''} ${ev.crit ? 'crit' : ''}`;
-  return ev.t;
-}
-
 async function endTurnFlow(app: App, run: RunState, ch: Character, c: Combat) {
   if (app.busy || c.over) return;
   app.busy = true;
@@ -264,17 +221,19 @@ async function endTurnFlow(app: App, run: RunState, ch: Character, c: Combat) {
   const fast = app.profile.settings.fast;
   try {
     c.endPlayerTurn();
-    app.render(); floaters(c);
+    app.render();
+    let dur = playCombatEvents(c);
     if (c.over) { app.busy = false; await endCombat(app, run, ch, c); return; }
-    await sleep(fast ? 120 : 320);
+    await sleep(Math.max(fast ? 120 : 320, dur));
     for (const e of [...c.enemies]) {
       if (e.dead) continue;
       c.enemyAct(e);
-      app.render(); floaters(c);
+      app.render();
+      dur = playCombatEvents(c);
       if (c.over) break;
-      await sleep(fast ? 160 : 480);
+      await sleep(Math.max(fast ? 160 : 480, dur + (fast ? 60 : 140)));
     }
-    if (!c.over) { c.finishEnemyPhase(); app.render(); floaters(c); }
+    if (!c.over) { c.finishEnemyPhase(); app.render(); playCombatEvents(c); sfx('turn'); }
   } finally {
     app.busy = false;
   }
@@ -284,6 +243,8 @@ async function endTurnFlow(app: App, run: RunState, ch: Character, c: Combat) {
 async function endCombat(app: App, run: RunState, ch: Character, c: Combat) {
   if (app.combat !== c) return;
   app.busy = true;
+  await sleep(450);
+  sfx(c.over === 'win' ? 'victory' : 'defeat');
   await sleep(c.over === 'win' ? 700 : 1100);
   resolveCombat(run, ch, c);
   app.combat = null;

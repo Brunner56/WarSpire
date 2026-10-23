@@ -3,6 +3,7 @@ import { App, registerScreen } from '../app';
 import { charDoll } from './title';
 import { statsPanel } from './hub';
 import { renderCombat } from './combat';
+import { settingsModal, applySettings } from '../settings';
 import { cardEl, showCard, itemTile, itemTooltip, goldEl, hpBar } from '../components';
 import { getCard, canUpgrade } from '../../data/cards';
 import { EVENTS } from '../../data/events';
@@ -60,6 +61,7 @@ export function topBar(app: App, run: RunState, ch: Character, inCombat = false)
     h('div', { class: 'tb-right' },
       h('button', { class: 'btn small', onclick: () => deckModal(run.deck) }, `🂠 ${run.deck.length}`),
       h('button', { class: 'btn small', onclick: () => gearModal(app, run, ch) }, '🎒'),
+      h('button', { class: 'btn small', title: 'Sound', onclick: () => { app.profile.settings.sound = !app.profile.settings.sound; applySettings(app.profile.settings); app.save(); app.render(); } }, app.profile.settings.sound ? '🔊' : '🔇'),
       h('button', { class: 'btn small', onclick: () => menuModal(app, run) }, '☰'),
     ),
     h('div', { class: 'tb-where' }, `${dg.icon} ${dg.name}${dg.acts.length > 1 ? ` — ${actOf(run).name}` : ''}${run.rank ? ` · ${HEROIC_RANKS[run.rank].name}` : ''}`),
@@ -69,6 +71,7 @@ export function topBar(app: App, run: RunState, ch: Character, inCombat = false)
 function menuModal(app: App, run: RunState) {
   const close = modal(h('div', null,
     h('h3', null, 'Menu'),
+    h('button', { class: 'btn', onclick: () => { close(); settingsModal(app); } }, '🔊 Sound & Settings'),
     h('button', { class: 'btn', onclick: () => { close(); app.go('title'); } }, 'Save & Quit to Title'),
     h('button', { class: 'btn danger', onclick: () => {
       close();

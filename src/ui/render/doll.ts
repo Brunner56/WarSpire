@@ -310,6 +310,8 @@ export function dollSvg(spec: DollSpec, opts: { w?: number; h?: number; pet?: st
   // front arm, weapon, front pauldron, offhand
   const front: string[] = [];
   const fSleeve = chest && !robe ? fillFor(chest, shirt) : chest && robe ? P.vol(shirt) : S;
+  // the weapon arm is its own group pivoting at the shoulder so combat can animate swings and casts
+  front.push('<g transform="translate(104 70)"><g class="d-arm"><g transform="translate(-104 -70)">');
   front.push(sh(limb(102, 72, 114, 94, 10.5, 8.5), fSleeve));
   if (!chest || robe) front.push(ln('M106 80 Q110 86 112 90', shade(skin, -0.3), 1, 'opacity=".5"'));
   front.push(sh(limb(114, 94, 120, 108, 8.5, 7.5), hands ? fillFor(hands, hands.look.c1) : S));
@@ -323,6 +325,7 @@ export function dollSvg(spec: DollSpec, opts: { w?: number; h?: number; pet?: st
     front.push(`<g transform="translate(121 111) rotate(${ang}) scale(${two ? 1.05 : 1.15})">${weaponSvg(P, mh.wpn, mh.look.c1, mh.look.c2 ?? GOLD, glow)}</g>`);
   }
   front.push(`<circle cx="121" cy="111" r="8" fill="${hands ? fillFor(hands, hands.look.c1) : S}" stroke="${INK}" stroke-width="1.7"/>` + ln('M117 109 q4 -2 8 1', INK, 0.8));
+  front.push('</g></g></g>');
   front.push(pauldron(104, 68, 1.1, true));
   if (!sh_) front.push(sh('M98 64 Q106 60 112 66 L110 76 L100 76Z', S, 1.3));
   const oh = G.offhand;
@@ -332,7 +335,7 @@ export function dollSvg(spec: DollSpec, opts: { w?: number; h?: number; pet?: st
 
   if (opts.pet) out.push(`<text x="132" y="188" font-size="26" text-anchor="middle">${opts.pet}</text>`);
   const flip = spec.flip ? `translate(160,0) scale(-1,1)` : '';
-  return `<svg viewBox="-6 -20 176 216" width="${opts.w ?? 120}" height="${opts.h ?? 180}" xmlns="http://www.w3.org/2000/svg">${P.defsSvg()}<g transform="${flip}">${out.join('')}</g></svg>`;
+  return `<svg viewBox="-6 -20 176 216" width="${opts.w ?? 120}" height="${opts.h ?? 180}" xmlns="http://www.w3.org/2000/svg">${P.defsSvg()}<g transform="${flip}"><g transform="translate(80 192)"><g class="d-breath"><g transform="translate(-80 -192)">${out.join('')}</g></g></g></g></svg>`;
 }
 
 export function itemsToDoll(items: Item[]): DollGear[] {
