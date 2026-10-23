@@ -209,3 +209,24 @@ describe('difficulties', () => {
     expect(prof.fallen?.[0]).toMatchObject({ name: a.name, level: 30, dungeon: 'Stratholme' });
   });
 });
+
+describe('difficulty lock', () => {
+  it('raising difficulty is permanent and opens the locked difficulty everywhere', async () => {
+    const { rankUnlocked, commitDifficulty, difficultyLock } = await import('../src/engine/run');
+    const ch = makeChar('paladin', 'human', 'ret', 15);
+    ch.cleared = { rfc: 0 };
+    expect(commitDifficulty(ch, 0)).toBe(false);
+    expect(commitDifficulty(ch, 1)).toBe(true);
+    expect(difficultyLock(ch)).toBe(1);
+    // Normal is closed for good, Heroic is open even in a dungeon never cleared on Normal
+    expect([0, 1, 2, 3].map(r => rankUnlocked(ch, 'rfc', r))).toEqual([false, true, false, false]);
+    expect([0, 1, 2, 3].map(r => rankUnlocked(ch, 'dm', r))).toEqual([false, true, false, false]);
+    // harder difficulties still unlock per dungeon
+    ch.cleared.rfc = 1;
+    expect([0, 1, 2, 3].map(r => rankUnlocked(ch, 'rfc', r))).toEqual([false, true, true, true]);
+    // the lock never goes down
+    expect(commitDifficulty(ch, 0)).toBe(false);
+    commitDifficulty(ch, 3);
+    expect([0, 1, 2, 3].map(r => rankUnlocked(ch, 'dm', r))).toEqual([false, false, false, true]);
+  });
+});

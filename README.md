@@ -19,6 +19,7 @@ Every run is a classic dungeon. Pick a path through a branching map, fight with 
   - 🛡️ **Heroic**: unlocks after a Normal clear. Enemies have +45% health and deal +27% damage. Drops more rare loot and **Dungeon Set 1** pieces, and you keep 1 extra item.
   - 🔥 **Mythic**: unlocks after a Heroic clear. Enemies have +64% health and deal +38% damage. Drops rare and epic loot and **Dungeon Set 1 and 2** pieces.
   - ☠️ **Hardcore**: Mythic with permadeath. A fallen hero is erased and remembered in the Hall of the Fallen.
+  - **Raising difficulty is permanent.** Once a hero enters a harder run, they can never play an easier difficulty again. Their locked difficulty is open in every dungeon they can enter.
   - Each class has two dungeon sets (Valor/Heroism, Lightforge/Soulforge, Magister's/Sorcerer's...). Their 2- and 4-piece bonuses are weaker than the Molten Core and Blackwing Lair raid sets.
   - Tuning: heroes who progressed through Normal win about 20% on Heroic and 10% on Mythic (`DIFFTUNE=1 npx vitest run tests/difftune.test.ts`).
 - Random events (Spirit Healer, Goblin gambler, a certain reckless paladin...), Goblin vendors, campfires and treasure.

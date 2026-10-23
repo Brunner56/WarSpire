@@ -24,6 +24,8 @@ export interface Character {
   cleared: Record<string, number>; // dungeon id -> highest difficulty cleared (0 Normal, 1 Heroic, 2 Mythic, 3 Hardcore)
   /** dungeons cleared on Hardcore */
   hardcore?: Record<string, boolean>;
+  /** Lowest difficulty this hero may ever play again; raised permanently when they enter a harder run. */
+  difficultyLock?: number;
   stats: { runs: number; wins: number; deaths: number; bossKills: number; bestFloor: number };
   created: number;
 }

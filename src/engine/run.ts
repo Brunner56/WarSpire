@@ -641,12 +641,28 @@ export function isUnlocked(ch: Character, dungeonId: string): boolean {
   return !d.unlock || (ch.cleared[d.unlock] ?? -1) >= 0;
 }
 
-/** Heroic unlocks by clearing Normal; Mythic and Hardcore unlock by clearing Heroic. */
+/** The hero's permanent difficulty floor (0 = Normal). */
+export const difficultyLock = (ch: Character) => ch.difficultyLock ?? 0;
+
+/**
+ * Heroic unlocks by clearing a dungeon on Normal; Mythic and Hardcore by clearing it on Heroic.
+ * Difficulties below the hero's lock are closed for good; the locked difficulty itself is open everywhere.
+ */
 export function rankUnlocked(ch: Character, dungeonId: string, rank: number): boolean {
+  const lock = difficultyLock(ch);
+  if (rank < lock) return false;
+  if (rank === lock) return true;
   const cleared = ch.cleared[dungeonId] ?? -1;
   if (rank <= 0) return true;
   if (rank === 1) return cleared >= 0;
   return cleared >= 1;
+}
+
+/** Entering a harder run raises the hero's lock permanently. Returns true if the lock changed. */
+export function commitDifficulty(ch: Character, rank: number): boolean {
+  if (rank <= difficultyLock(ch)) return false;
+  ch.difficultyLock = rank;
+  return true;
 }
 
 /** A hero who falls on Hardcore is erased along with everything they earned. */

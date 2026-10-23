@@ -9,6 +9,7 @@ import { wipeProfile, newProfile } from '../../engine/save';
 import type { Character } from '../../engine/character';
 import { setWowArt } from '../wowart';
 import { settingsModal, versionEl } from '../settings';
+import { difficulty } from '../../data/difficulty';
 
 export function charDoll(ch: Character, w = 90, extraGear?: ReturnType<typeof itemsToDoll>) {
   const gear = extraGear ?? itemsToDoll(equippedItems(ch));
@@ -36,6 +37,7 @@ registerScreen('title', (app: App) => {
             h('div', { class: 'cc-sub' }, `Level ${ch.level} ${RACE_BY_ID[ch.race].name} ${cls.name}`),
             h('div', { class: 'cc-sub muted' }, `${cls.trees.find(t => t.id === ch.spec)?.name ?? ''} · ${Object.values(ch.cleared).length} dungeons cleared`),
             p.run?.charId === ch.id ? h('div', { class: 'tag' }, 'In a run') : null,
+            (ch.difficultyLock ?? 0) > 0 ? h('div', { class: 'tag', style: { color: difficulty(ch.difficultyLock!).color } }, `${difficulty(ch.difficultyLock!).icon} ${difficulty(ch.difficultyLock!).name} hero`) : null,
           ));
       }),
       h('div', { class: 'char-card new', onclick: () => app.go('create') }, h('div', { class: 'plus' }, '+'), h('div', null, 'Create New Hero')),
@@ -80,5 +82,6 @@ export function howToPlay() {
     h('h3', null, 'Difficulty'),
     h('p', null, '⚔️ Normal is the standard experience. Clear a dungeon on Normal to unlock 🛡️ Heroic, and clear Heroic to unlock 🔥 Mythic and ☠️ Hardcore. Heroic and Mythic enemies have far more health and hit much harder, but drop more rare and epic loot, pieces of your class\'s Dungeon Sets, and let you keep an extra item.'),
     h('p', null, '☠️ Hardcore plays at Mythic difficulty with permadeath: if your hero falls, they and all their progress are erased forever.'),
+    h('p', null, 'Raising difficulty is permanent: once a hero enters a Heroic, Mythic or Hardcore run, they can never play an easier difficulty again. Their locked difficulty is open in every dungeon they can enter.'),
   ));
 }
