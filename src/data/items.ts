@@ -27,7 +27,7 @@ export const FX: Record<string, FxDef> = {
   zum_rah_wand: { desc: 'Start each combat by applying 3 Affliction to ALL enemies.', hooks: P.startAll('affliction', 3) },
   jangdor: { desc: 'Start each combat with 1 Clearcasting.', hooks: P.start('clearcast', 1) },
   ironfoe: { desc: 'Your first Attack each turn strikes again for 4.', hooks: { onCardPlayed: (c, _n, def, ctx) => { if (def.type === 'attack' && c.attacksThisTurn === 1) { const t = ctx.target && !ctx.target.dead ? ctx.target : c.randomEnemy(); if (t) c.effectDamage(t, 4, 'physical', 'effect'); } } } },
-  hand_of_justice: { desc: 'Every 3rd Attack grants 1 extra resource.', hooks: { onCardPlayed: (c, _n, def) => { if (def.type !== 'attack') return; c.mem.hoj = (c.mem.hoj ?? 0) + 1; if (c.mem.hoj % 3 === 0) c.gainRes(1); } } },
+  hand_of_justice: { desc: 'Every 3rd Attack grants 1 extra resource (Rage costs 2 HP).', hooks: { onCardPlayed: (c, _n, def) => { if (def.type !== 'attack') return; c.mem.hoj = (c.mem.hoj ?? 0) + 1; if (c.mem.hoj % 3 === 0) { if (c.p.resName === 'Rage') c.loseHp(2); c.gainRes(1); } } } },
   dagran_scepter: { desc: 'Fire damage +4. Start combat with 2 Fortified.', hooks: all(P.dmgSchool(['fire'], 4), P.start('fortify', 2)) },
   briarwood: { desc: 'Spell critical strike chance +5%. Spell Power +1.', hooks: P.crit(s => s !== 'physical', 5) },
   blackhand_breadth: { desc: '+5% critical strike chance.', hooks: P.crit(() => true, 5) },
@@ -68,7 +68,7 @@ const S = (id: string, name: string, cls: ClassId, tier: 1 | 2, look: ItemLook, 
 
 export const SETS: SetDef[] = [
   S('might', 'Battlegear of Might', 'warrior', 1, { c1: '#8b2c1a', c2: '#d4a017', style: 'spiked' },
-    { desc: 'Start each combat with 2 Rage.', hooks: P.startRes(2) },
+    { desc: 'Start each combat with 2 Rage at the cost of 4 HP.', hooks: { onCombatStart: c => { c.loseHp(4); c.gainRes(2); } } },
     { desc: 'Whenever you take unblocked damage, gain 2 Block.', hooks: { onHurt: (c, _n, dealt) => { if (dealt > 0) c.gainBlock(2, undefined, true); } } }),
   S('wrath', 'Battlegear of Wrath', 'warrior', 2, { c1: '#1c2a4a', c2: '#c0c0c0', style: 'spiked' },
     { desc: 'Attacks deal +3 damage.', hooks: P.dmgAttack(3) },

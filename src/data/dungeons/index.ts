@@ -22,5 +22,11 @@ export function getEnemyDef(id: string): EnemyDef {
 }
 export const allEnemyIds = () => [...ENEMIES.keys()];
 
+/** Per-tier difficulty tuning on top of the base curve, from the bot difficulty report (tests/difficulty.ts). */
+export const TIER_TUNE: number[] = [1.66, 1.4, 1.49, 1.38, 1.34, 1.23, 1.13, 1.01, 1, 1.02, 0.81, 0.77];
+
 /** HP and damage multipliers by dungeon tier. */
-export const tierScale = (tier: number) => ({ hp: 1 + 0.15 * (tier - 1), dmg: 1 + 0.075 * (tier - 1) });
+export const tierScale = (tier: number) => {
+  const k = TIER_TUNE[tier - 1] ?? 1;
+  return { hp: (1 + 0.15 * (tier - 1)) * k, dmg: (1 + 0.075 * (tier - 1)) * k };
+};

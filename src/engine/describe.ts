@@ -17,7 +17,7 @@ export const KW_TEXT: Record<Keyword, string> = {
   innate: 'Prepared (always in your opening hand).',
   retain: 'Retain (not discarded at end of turn).',
   finisher: 'Finisher (consumes all Combo Points).',
-  opener: 'Opener (requires Stealth).',
+  opener: 'Opener (always in your opening hand; costs 1 more outside Stealth).',
   unplayable: 'Unplayable.',
   caster: 'Spell (shifts a Druid out of Bear/Cat Form).',
   ethereal: 'Fleeting (removed if still in hand at end of turn).',
